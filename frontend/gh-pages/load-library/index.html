@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google" value="notranslate">
+    <link rel="shortcut icon" href="static/favicon.ico">
+    <title>PRG AI Blocks</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background-color: #f0f0f0; /* Light background color for contrast */
+      }
+
+      .top-panel {
+        width: 100%;
+        height: 5.7%;
+        background-color: #333;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        box-sizing: border-box;
+        font-size: 16px;
+        position: absolute;
+        z-index: 1000;
+        
+      }
+
+      .container {
+        width: 100%;
+        height: 94.5%; /* Full height minus top panel */
+        box-sizing: border-box;
+        background-color: #fff; /* White background for content */
+        border: 1px solid #ccc; /* Optional: border for clarity */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+        overflow: auto; /* Handles overflow content */
+        position: absolute;
+        top: 5.7%; /* Starts below the top panel */
+        left: 0px;
+        z-index: 1000;
+      }
+
+      #codeEditor {
+        width: 100%;
+        height: 200px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        border: 1px solid #333;
+        border-radius: 4px;
+        padding: 10px;
+        box-sizing: border-box;
+        resize: vertical; /* Allow vertical resizing */
+      }
+
+    </style>
+  <script defer src="runtime.js"></script><script defer src="chunks/vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_2_node_modules_micr-8f889f.6dce1edea4e57eb3ccf5.js"></script><script defer src="chunks/vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8.1be7cd83ab653a07364e.js"></script><script defer src="chunks/src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.868d819c85a6b8fa71bd.js"></script><script defer src="gui.js"></script></head>
+  <body>
+    <div class="top-panel">
+      <span>PRG AI Blocks</span>
+      <button id="toggleContainerButton">Hide Container</button>
+    </div>
+    <div class="container" id="mainContainer">
+      <h1>Hello from the Frontend!</h1>
+      <div>
+        <!-- <textarea id="codeEditor">// Write your code here...</textarea> -->
+        <button id="buildButton">Run Build</button>
+        <!-- <button id="saveButton">Save to File</button>  -->
+        <div id="status"></div>
+        <div id="output"></div> <!-- This will display the command output -->
+      </div>
+      <div id="sidebar">
+        <h3>Files</h3>
+        <ul id="fileList"></ul>
+      </div>
+      <div id="editor">
+        <h3>Editor</h3>
+        <textarea id="fileContent" placeholder="Select a file to edit..."></textarea>
+        <button id="saveButton">Save</button>
+      </div>
+    </div>
+    <script>
+      const toggleContainerButton = document.getElementById('toggleContainerButton');
+      const mainContainer = document.getElementById('mainContainer');
+
+      toggleContainerButton.addEventListener('click', () => {
+        if (mainContainer.style.display === 'none') {
+          mainContainer.style.display = 'block';
+          toggleContainerButton.textContent = 'Hide Container';
+        } else {
+          mainContainer.style.display = 'none';
+          toggleContainerButton.textContent = 'Show Container';
+        }
+      });
+
+      const buildButton = document.getElementById('buildButton');
+      const saveButton1 = document.getElementById('saveButton'); // New button reference
+      const statusElement = document.getElementById('status');
+      const outputElement = document.getElementById('output');
+      const codeEditor = document.getElementById('codeEditor');
+
+      buildButton.addEventListener('click', async () => {
+        //const code = codeEditor.value; // Get the code from the editor
+        statusElement.textContent = 'Running...';
+        outputElement.textContent = ''; // Clear previous output
+
+        try {
+          const response = await fetch('/run-command', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (response.ok) {
+            const message = await response.text(); // Retrieve the response text
+            console.log('Success:', message);
+            outputElement.textContent = `Success: ${message}`;
+          } else {
+            const errorMessage = await response.text();
+            console.error('Error:', errorMessage);
+            outputElement.textContent = `Error: ${errorMessage}`;
+          }
+        } catch (error) {
+          console.error('Fetch error:', error);
+          outputElement.textContent = `Fetch error: ${error.message}`;
+        }
+      });
+
+      // New event listener for saving to a file
+      // saveButton1.addEventListener('click', async () => {
+      //   const code = codeEditor.value; // Get the code from the editor
+      //   console.log("CODE", code);
+      //   statusElement.textContent = 'Saving...';
+
+      //   try {
+      //     const response = await fetch('/write-file', {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //       body: JSON.stringify({ content: code }), // Send the code to the write-file API
+      //     });
+
+      //     if (response.ok) {
+      //       const message = await response.text(); // Retrieve the response text
+      //       console.log('File saved:', message);
+      //       outputElement.textContent = `File saved: ${message}`;
+      //     } else {
+      //       const errorMessage = await response.text();
+      //       console.error('Error saving file:', errorMessage);
+      //       outputElement.textContent = `Error saving file: ${errorMessage}`;
+      //     }
+      //   } catch (error) {
+      //     console.error('Fetch error:', error);
+      //     outputElement.textContent = `Fetch error: ${error.message}`;
+      //   }
+      // });
+      const fileList = document.getElementById('fileList');
+      const fileContent = document.getElementById('fileContent');
+      const saveButton = document.getElementById('saveButton');
+      let currentFilePath = null;
+  
+      // Fetch file list
+      async function fetchFileList() {
+        console.log("here 2");
+        const response = await fetch('/list-directory', { method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }});
+        const files = await response.json();
+        console.log("files");
+        console.log(files);
+        renderFileList(files);
+      }
+  
+      // Render file list
+      function renderFileList(files) {
+        fileList.innerHTML = '';
+        files.forEach(file => {
+          const li = document.createElement('li');
+          li.textContent = file.name;
+          li.className = 'file-item';
+          li.onclick = () => openFile(file.path, li);
+          fileList.appendChild(li);
+        });
+      }
+  
+      // Open file
+      async function openFile(filePath, element) {
+        const response = await fetch(`/open-file`, { method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: filePath })});
+        const content = await response.text();
+        fileContent.value = content;
+        currentFilePath = filePath;
+  
+        // Highlight active file
+        document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+      }
+  
+      // Save file
+      saveButton.addEventListener('click', async () => {
+        if (!currentFilePath) {
+          alert('No file selected!');
+          return;
+        }
+  
+        const content = fileContent.value;
+        const response = await fetch('/save-file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ path: currentFilePath, content }),
+        });
+  
+        if (response.ok) {
+          alert('File saved successfully!');
+        } else {
+          alert('Failed to save file.');
+        }
+      });
+  
+      fetchFileList();
+    </script>
+  </body>
+</html>

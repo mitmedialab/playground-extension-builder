@@ -1,0 +1,36 @@
+{
+  "name": "prg-extension-root",
+  "private": true,
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "ts:node": "./node_modules/.bin/ts-node -r tsconfig-paths/register",
+    "ts:node:extensions": "pnpm ts:node --project ./extensions/scripts/tsconfig.json",
+    "build:extensions:and:gui": "pnpm ts:node:extensions ./scripts/build.ts",
+    "build": "pnpm install && pnpm transpile:vm && pnpm build:extensions:and:gui --include all false --parrallel false",
+    "new:extension": "pnpm ts:node:extensions ./extensions/scripts/factories/extension.ts",
+    "add:ui": "pnpm ts:node:extensions ./extensions/scripts/factories/ui.ts",
+    "add:arg": "pnpm ts:node:extensions ./extensions/scripts/factories/customArgument.ts",
+    "add:test": "pnpm ts:node:extensions ./extensions/scripts/factories/test.ts",
+    "add:package": "pnpm ts:node:extensions ./extensions/scripts/factories/package.ts",
+    "transpile:vm": "pnpm ts:node:extensions ./extensions/scripts/transpileVm.ts",
+    "test:extensions": "pnpm --filter extensions test",
+    "document:extensions": "pnpm --filter extensions document",
+    "edocument": "pnpm document:extensions",
+    "etest": "pnpm test:extensions"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.2",
+    "@types/webgl2": "^0.0.6",
+    "@types/yargs": "^17.0.32",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.1",
+    "tslib": "^2.4.1",
+    "typescript": "latest",
+    "yargs": "^17.7.2"
+  },
+  "overrides": {
+    "ts-node": {
+      "typescript": "$typescript"
+    }
+  }
+}

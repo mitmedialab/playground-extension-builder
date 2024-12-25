@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontend Page</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Basic styles for the code editor */
+    #codeEditor {
+      width: 100%;
+      height: 200px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 14px;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 10px;
+      box-sizing: border-box;
+      resize: vertical; /* Allow vertical resizing */
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello from the Frontend!</h1>
+  <div>
+    <textarea id="codeEditor">// Write your code here...</textarea>
+    <button id="buildButton">Run Build</button>
+    <button id="saveButton">Save to File</button> <!-- New button -->
+    <div id="status"></div>
+    <div id="output"></div> <!-- This will display the command output -->
+  </div>
+
+  <script>
+    const buildButton = document.getElementById('buildButton');
+    const saveButton = document.getElementById('saveButton'); // New button reference
+    const statusElement = document.getElementById('status');
+    const outputElement = document.getElementById('output');
+    const codeEditor = document.getElementById('codeEditor');
+
+    buildButton.addEventListener('click', async () => {
+      const code = codeEditor.value; // Get the code from the editor
+      statusElement.textContent = 'Running...';
+      outputElement.textContent = ''; // Clear previous output
+
+      try {
+        const response = await fetch('/run-command', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code }), // Send the code to the backend
+        });
+
+        if (response.ok) {
+          const message = await response.text(); // Retrieve the response text
+          console.log('Success:', message);
+          outputElement.textContent = `Success: ${message}`;
+        } else {
+          const errorMessage = await response.text();
+          console.error('Error:', errorMessage);
+          outputElement.textContent = `Error: ${errorMessage}`;
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        outputElement.textContent = `Fetch error: ${error.message}`;
+      }
+    });
+
+    // New event listener for saving to a file
+    saveButton.addEventListener('click', async () => {
+      const code = codeEditor.value; // Get the code from the editor
+      console.log("CODE", code);
+      statusElement.textContent = 'Saving...';
+
+      try {
+        const response = await fetch('/write-file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content: code }), // Send the code to the write-file API
+        });
+
+        if (response.ok) {
+          const message = await response.text(); // Retrieve the response text
+          console.log('File saved:', message);
+          outputElement.textContent = `File saved: ${message}`;
+        } else {
+          const errorMessage = await response.text();
+          console.error('Error saving file:', errorMessage);
+          outputElement.textContent = `Error saving file: ${errorMessage}`;
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        outputElement.textContent = `Fetch error: ${error.message}`;
+      }
+    });
+  </script>
+  <script src="scripts.js"></script>
+</body>
+</html>

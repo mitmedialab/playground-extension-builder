@@ -1,0 +1,50 @@
+{
+  "name": "extensions-scripts",
+  "version": "1.0.0",
+  "description": "Helper scripts to manage extension creation, bundling, etc. ",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@rollup/plugin-alias": "latest",
+    "@rollup/plugin-babel": "latest",
+    "@rollup/plugin-commonjs": "latest",
+    "@rollup/plugin-image": "latest",
+    "@rollup/plugin-json": "latest",
+    "@rollup/plugin-node-resolve": "latest",
+    "@rollup/plugin-typescript": "latest",
+    "@types/glob": "^8.1.0",
+    "babel": "^6.23.0",
+    "chalk": "^4.1.2",
+    "glob": "^10.3.10",
+    "mime-types": "^2.1.35",
+    "rollup-plugin-alias": "latest",
+    "rollup-plugin-css-only": "latest",
+    "rollup-plugin-polyfill-node": "latest",
+    "rollup-plugin-svelte": "latest",
+    "rollup-plugin-svg": "latest",
+    "rollup-plugin-terser": "latest",
+    "sanitize-filename": "^1.6.3",
+    "svelte-preprocess": "^5.0.0",
+    "tslib": "^2.5.0",
+    "typescript": "latest"
+  },
+  "overrides": {
+    "@rollup/plugin-typescript": {
+      "typescript": "$typescript"
+    },
+    "svelte-preprocess": {
+      "typescript": "$typescript"
+    },
+    "tslib": {
+      "typescript": "$typescript"
+    }
+  },
+  "dependencies": {
+    "rollup": "latest"
+  }
+}
