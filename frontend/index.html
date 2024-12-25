@@ -5,31 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="google" value="notranslate">
     <link rel="shortcut icon" href="static/favicon.ico">
-    <title>PRG AI Blocks</title>
+    <title>PRG Extension Builder</title>
     <style>
       body {
         margin: 0;
         padding: 0;
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 100%;
         background-color: #f0f0f0; /* Light background color for contrast */
       }
 
       .top-panel {
         width: 100%;
         height: 5.7%;
-        background-color: #333;
-        color: #fff;
+        background-color: #2c3e50; /* Darker shade to match sidebar */
+        color: #ecf0f1; /* Light text color */
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 10px;
+        padding: 0 20px; /* Increased padding for a more spacious look */
         box-sizing: border-box;
-        font-size: 16px;
-        position: absolute;
-        z-index: 1000;
-        
+        font-size: 18px; /* Slightly larger font size */
+        position: fixed; /* Fixed to the top of the page */
+        z-index: 3000;
+      }
+
+      .top-panel span {
+        font-weight: bold;
+      }
+
+      #toggleContainerButton {
+        background-color: #16a085; /* Match the save button color */
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #toggleContainerButton:hover {
+        background-color: #1abc9c; /* Slightly brighter on hover */
       }
 
       .container {
@@ -46,6 +64,16 @@
         z-index: 1000;
       }
 
+      .editor-panel {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 90%;
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+
       #codeEditor {
         width: 100%;
         height: 200px;
@@ -60,32 +88,173 @@
         resize: vertical; /* Allow vertical resizing */
       }
 
+      #sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 20px;
+        height: 100%;
+        box-sizing: border-box;
+        overflow-y: auto;
+      }
+
+    #sidebar h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #ecf0f1;
+    }
+
+    #fileList {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #fileList li {
+      padding: 8px;
+      background-color: #34495e;
+      margin-bottom: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    #fileList li:hover {
+      background-color: #16a085;
+    }
+
+    #editor {
+      flex: 1;
+      padding: 20px;
+      background-color: white;
+      height: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+      border: 3px solid #2c3e50;
+    }
+
+    #editor h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #2c3e50;
+    }
+
+    #fileContent {
+      width: 100%;
+      height: 90%;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1rem;
+      padding: 10px;
+      background-color: #ecf0f1;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    .button-container {
+      display: flex;
+    }
+
+    .editButton {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #16a085;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      margin-right: 10px;
+    }
+
+    .editButton:hover {
+      background-color: #1abc9c;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+        text-align: center;
+        font-size: 24px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.modal-footer button {
+  background-color: #16a085;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer button:hover {
+  background-color: #1abc9c;
+}
+
+
     </style>
     <div class="test">
   <script defer src="runtime.js"></script><script defer src="chunks/vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_2_node_modules_micr-8f889f.6dce1edea4e57eb3ccf5.js"></script><script defer src="chunks/vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8.1be7cd83ab653a07364e.js"></script><script defer src="chunks/src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.868d819c85a6b8fa71bd.js"></script><script defer src="gui.js"></script></head>
 </div>
   <body>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h2 id="status">Pending</h2>
+        <div id="output">Pending</div>
+      </div>
+    </div>
     <div class="top-panel">
-      <span>PRG AI Blocks</span>
-      <button id="toggleContainerButton">Hide Container</button>
+      <span>PRG Extension Builder</span>
+      <button id="toggleContainerButton">Show Playground</button>
     </div>
     <div class="container" id="mainContainer">
-      <h1>Hello from the Frontend!</h1>
-      <div>
-        <!-- <textarea id="codeEditor">// Write your code here...</textarea> -->
-        <button id="buildButton">Run Build</button>
-        <!-- <button id="saveButton">Save to File</button>  -->
+      <h1 style="margin-left:30px; margin-right: 30px">Extension Editor</h1>
+      <!-- <div>
         <div id="status"></div>
-        <div id="output"></div> <!-- This will display the command output -->
-      </div>
-      <div id="sidebar">
-        <h3>Files</h3>
-        <ul id="fileList"></ul>
-      </div>
-      <div id="editor">
-        <h3>Editor</h3>
-        <textarea id="fileContent" placeholder="Select a file to edit..."></textarea>
-        <button id="saveButton">Save</button>
+        <div id="output"></div> 
+      </div> -->
+      <div class="editor-panel">
+        <div id="sidebar">
+          <h3>Files</h3>
+          <ul id="fileList">
+            <!-- File list items will go here -->
+          </ul>
+        </div>
+        <div id="editor">
+          <h3>Editor</h3>
+          <textarea id="fileContent" placeholder="Select a file to edit..."></textarea>
+          <div class="button-container">
+            <button class="editButton" id="saveButton">Save</button>
+            <button class="editButton" id="buildButton">Preview Extension</button>
+          </div>
+        </div>
       </div>
     </div>
     <script>
@@ -96,7 +265,7 @@
 
       children.forEach(child => {
         // Remove the child if it doesn't have class "top-panel" or "container"
-        if (!child.classList.contains('top-panel') && !child.classList.contains('container')) {
+        if (!child.classList.contains('top-panel') && !child.classList.contains('container') && !child.classList.contains('modal')) {
           body.removeChild(child);
         }
       });
@@ -111,7 +280,6 @@
             const newScript = document.createElement('script');
             newScript.src = `${src.split('?')[0]}?v=${Date.now()}`; // Add a timestamp to prevent caching
             newScript.defer = true;
-            //script.parentNode.replaceChild(newScript, script);
             document.body.appendChild(newScript);
           }
         });
@@ -120,40 +288,15 @@
 
       const toggleContainerButton = document.getElementById('toggleContainerButton');
       const mainContainer = document.getElementById('mainContainer');
-
-      async function showTab() {
-        const playgroundJson = await fetch('/get_playground', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        const show_playground = await playgroundJson.json();
-          console.log("SHOW", show_playground);
-          console.log("type", typeof show_playground);
-          if (show_playground == "true") {
-            mainContainer.style.display = 'none';
-            toggleContainerButton.textContent = 'Show Container';
-            await fetch('/hide_playground', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            });
-          }
-      }
-
-      showTab();
-
       
 
       toggleContainerButton.addEventListener('click', () => {
         if (mainContainer.style.display === 'none') {
           mainContainer.style.display = 'block';
-          toggleContainerButton.textContent = 'Hide Container';
+          toggleContainerButton.textContent = 'Show Playground';
         } else {
           mainContainer.style.display = 'none';
-          toggleContainerButton.textContent = 'Show Container';
+          toggleContainerButton.textContent = 'Hide Playground';
         }
       });
 
@@ -165,8 +308,12 @@
 
       buildButton.addEventListener('click', async () => {
         //const code = codeEditor.value; // Get the code from the editor
-        statusElement.textContent = 'Running...';
+        
+        statusElement.textContent = 'Generating preview...';
         outputElement.textContent = ''; // Clear previous output
+        console.log("SHOWING FLEX");
+        const modal = document.getElementById("modal");
+        modal.style.display = "flex";
 
         try {
           const response = await fetch('/run-command', {
@@ -179,16 +326,11 @@
           if (response.ok) {
             const message = await response.text(); // Retrieve the response text
             console.log('Success:', message);
-            await fetch('/show_playground', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            });
             outputElement.textContent = `Success: ${message}`;
+            modal.style.display = "none";
             reloadScripts();
             mainContainer.style.display = 'none';
-            toggleContainerButton.textContent = 'Show Container';
+            toggleContainerButton.textContent = 'Hide Playground';
 
           } else {
             const errorMessage = await response.text();
