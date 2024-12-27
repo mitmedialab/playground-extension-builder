@@ -50,7 +50,7 @@
         background-color: #1abc9c; /* Slightly brighter on hover */
       }
 
-      .container {
+      .container_class {
         width: 100%;
         height: 94.5%; /* Full height minus top panel */
         box-sizing: border-box;
@@ -234,7 +234,7 @@
       <span>PRG Extension Builder</span>
       <button id="toggleContainerButton">Show Playground</button>
     </div>
-    <div class="container" id="mainContainer">
+    <div class="container_class" id="mainContainer">
       <h1 style="margin-left:30px; margin-right: 30px">Extension Editor</h1>
       <!-- <div>
         <div id="status"></div>
@@ -265,7 +265,7 @@
 
       children.forEach(child => {
         // Remove the child if it doesn't have class "top-panel" or "container"
-        if (!child.classList.contains('top-panel') && !child.classList.contains('container') && !child.classList.contains('modal')) {
+        if (!child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('modal')) {
           body.removeChild(child);
         }
       });

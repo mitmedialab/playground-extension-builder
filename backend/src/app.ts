@@ -26,6 +26,50 @@ app.get('*', (req, res) => {
   });
 });
 
+function copyFile(source: string, destination: string, callback: Function) {
+  fs.readFile(source, 'utf8', (readErr, data) => {
+      if (readErr) {
+          console.error(`Error reading source file (${source}):`, readErr);
+          callback(readErr);
+          return;
+      }
+
+      fs.writeFile(destination, data, 'utf8', (writeErr) => {
+          if (writeErr) {
+              console.error(`Error writing to destination file (${destination}):`, writeErr);
+              callback(writeErr);
+          } else {
+              console.log(`File moved successfully: ${source} -> ${destination}`);
+              callback(null);
+          }
+      });
+  });
+}
+
+function readAuxiliaryExtensionInfo(filePath: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf8', (err, data) => {
+          if (err) {
+              return reject(err);
+          }
+
+          // Extract the variable value
+          const match = data.match(/var\s+AuxiliaryExtensionInfo\s*=\s*(\{[\s\S]*?\});/);
+          if (match && match[1]) {
+              try {
+                  // Parse the JSON string
+                  const json = JSON.parse(match[1]);
+                  resolve(json);
+              } catch (parseError) {
+                  reject(new Error('Failed to parse AuxiliaryExtensionInfo JSON'));
+              }
+          } else {
+              reject(new Error('AuxiliaryExtensionInfo variable not found'));
+          }
+      });
+  });
+}
+
 app.post('/run-command', (req: Request, res: Response) => {
   const command = `cd ${rootDir} && pnpm ts:node --project ./extensions/scripts/tsconfig.json ./scripts/build.ts --include simple_example`;
 
@@ -50,10 +94,6 @@ app.post('/run-command', (req: Request, res: Response) => {
     console.error(data.toString()); // Optionally log errors to the console
   });
 
-
-
-
-
   // Handle termination of the process
   process.on('exit', (code, signal) => {
     console.log(`Process exited with code ${code} and signal ${signal}`);
@@ -64,22 +104,38 @@ app.post('/run-command', (req: Request, res: Response) => {
       // If the build succeeds, send a success message to the frontend
       const sourcePath = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/simpleprg95grpexample.js');
       const destinationPath = path.join(rootDir, 'frontend/static/extension-bundles/simpleprg95grpexample.js');
+      const sourcePath1 = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/simpleprg95grpexample.js.map');
+      const destinationPath1 = path.join(rootDir, 'frontend/static/extension-bundles/simpleprg95grpexample.js.map');
+      const auxiliaryPathFull = path.join(rootDir, 'frontend/static/extension-bundles/AuxiliaryExtensionInfo.js');
+      const auxiliaryPathExtension = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/AuxiliaryExtensionInfo.js');
 
-      // Read the source file and write its contents to the destination file
-      fs.readFile(sourcePath, 'utf8', (readErr, data) => {
-          if (readErr) {
-              console.error('Error reading source file:', readErr);
-              res.status(500).send('Error reading source file');
-              return;
-          }
+      // Helper function to copy a file
+      
 
-        fs.writeFile(destinationPath, data, 'utf8', (writeErr) => {
-            if (writeErr) {
-                console.error('Error writing to destination file:', writeErr);
-                res.status(500).send('Error writing to destination file');
+      // Copy both files
+      copyFile(sourcePath, destinationPath, (err1: Error) => {
+        if (err1) {
+            res.status(500).send('Error copying the first file');
+            return;
+        }
+        copyFile(sourcePath1, destinationPath1, (err2: Error) => {
+            if (err2) {
+                res.status(500).send('Error copying the second file');
             } else {
-                console.log('File moved successfully');
-                res.status(200).send('Build completed successfully and file moved');
+                readAuxiliaryExtensionInfo(auxiliaryPathFull).then((fullJSON) => {
+                  console.log("copied first");
+                  readAuxiliaryExtensionInfo(auxiliaryPathExtension).then((extensionJSON) => {
+                    console.log("copied second");
+                    const name = Object.keys(extensionJSON)[0];
+                    fullJSON[name] = extensionJSON[name];
+                    const content = `var AuxiliaryExtensionInfo = ${JSON.stringify(fullJSON)};`;
+                    fs.writeFile(auxiliaryPathFull, content, () => {
+                      console.log("FILE WRITTEN");
+                      res.status(200).send('Build completed successfully and files moved');
+                    });
+                    
+                  });
+                })
             }
         });
       });
