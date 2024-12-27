@@ -28,7 +28,14 @@ lib-cov
 coverage
 *.lcov
 
-scratch-packages/scratch-gui/static
+
+# nyc test coverage
+.nyc_output
+
+
+scratch-packages/scratch-gui/static/
+scratch-packages/scratch-gui/src/generated/
+
 # Exclude everything in extensions/src
 extensions/src/*
 
@@ -36,12 +43,9 @@ extensions/src/*
 !extensions/src/common/
 !extensions/src/.templates/
 
-# Include files inside common and .templates (if you want to include files inside them)
+# Include files inside common and .templates
 !extensions/src/common/**
 !extensions/src/.templates/**
-
-# nyc test coverage
-.nyc_output
 
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
