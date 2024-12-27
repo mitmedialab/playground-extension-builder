@@ -28,6 +28,18 @@ lib-cov
 coverage
 *.lcov
 
+scratch-packages/scratch-gui/static
+# Exclude everything in extensions/src
+extensions/src/*
+
+# Include common and .templates directories
+!extensions/src/common/
+!extensions/src/.templates/
+
+# Include files inside common and .templates (if you want to include files inside them)
+!extensions/src/common/**
+!extensions/src/.templates/**
+
 # nyc test coverage
 .nyc_output
 
