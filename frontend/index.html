@@ -221,9 +221,19 @@
 
     </style>
     <div class="test">
-  <script defer src="runtime.js"></script><script defer src="chunks/vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_2_node_modules_micr-8f889f.6dce1edea4e57eb3ccf5.js"></script><script defer src="chunks/vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8.1be7cd83ab653a07364e.js"></script><script defer src="chunks/src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.868d819c85a6b8fa71bd.js"></script><script defer src="gui.js"></script></head>
-</div>
-  <body>
+    
+    </div>
+    </head>
+    <body>
+    <!-- <div class="test"> -->
+  
+  <!-- <script async src="https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs/loader.js"></script> -->
+<!-- </div> -->
+    <script defer src="runtime.js"></script>
+    <script defer src="chunks/vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_2_node_modules_micr-8f889f.6dce1edea4e57eb3ccf5.js"></script>
+    <script defer src="chunks/vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8.1be7cd83ab653a07364e.js"></script>
+    <script defer src="chunks/src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.868d819c85a6b8fa71bd.js"></script>
+    <script defer src="gui.js"></script>
     <div id="modal" class="modal">
       <div class="modal-content">
         <h2 id="status">Pending</h2>
@@ -235,7 +245,11 @@
       <button id="toggleContainerButton">Show Playground</button>
     </div>
     <div class="container_class" id="mainContainer">
-      <h1 style="margin-left:30px; margin-right: 30px">Extension Editor</h1>
+      <div style="display: flex; align-items: center; margin-left: 30px; margin-right: 30px;">
+        <h1>Extension Editor</h1>
+        <input type="text" placeholder="Enter extension name" style="padding: 5px; margin-left: 20px; width: 250px;">
+        <button id="saveNameButton" style="padding: 5px 10px; margin-left: 10px; cursor: pointer;">Save</button>
+    </div>
       <!-- <div>
         <div id="status"></div>
         <div id="output"></div> 
@@ -249,172 +263,238 @@
         </div>
         <div id="editor">
           <h3>Editor</h3>
-          <textarea id="fileContent" placeholder="Select a file to edit..."></textarea>
+          <div id="fileContent" placeholder="Select a file to edit..."></div>
           <div class="button-container">
             <button class="editButton" id="saveButton">Save</button>
+            <button class="editButton" id="checkErrorButton">Check Errors</button>
             <button class="editButton" id="buildButton">Preview Extension</button>
           </div>
         </div>
       </div>
     </div>
+    <script src="helper.js"></script>
     <script>
+      let editor;
+      const monacoLoader = document.createElement('script');
+      const container = document.createElement('div');
+      container.setAttribute("class", "scriptRemove");
+      monacoLoader.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs/loader.js';
+      monacoLoader.setAttribute("defer", "");
+      monacoLoader.onload = () => {
+          require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs' } });
+          require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('fileContent'), {
+              value: `// Select a file to edit`,
+              language: 'typescript',
+              theme: 'vs-dark',
+          });
+          
+          monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+              module: monaco.languages.typescript.ModuleKind.ESNext,
+              target: monaco.languages.typescript.ScriptTarget.ESNext,
+              allowNonTsExtensions: true,
+              allowSyntheticDefaultImports: true,
+          });
+          
 
-    function removeBodyChildrenExcept() {
-      const body = document.body;
-      const children = Array.from(body.children); // Get all children of the body
+          
+          monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+              noSemanticValidation: true,
+              noSyntaxValidation: false,
+          });
+          
+          monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+          });
+      };
+      container.appendChild(monacoLoader);
 
-      children.forEach(child => {
-        // Remove the child if it doesn't have class "top-panel" or "container"
-        if (!child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('modal')) {
-          body.removeChild(child);
-        }
-      });
-    }
+      // Observe changes to the DOM
+      const observer = new MutationObserver((mutationsList) => {
+          for (const mutation of mutationsList) {
+              if (mutation.type === 'childList') {
+                  const addedNodes = Array.from(mutation.addedNodes);
+                  for (const node of addedNodes) {
 
-      function reloadScripts() {
-        const scripts = document.querySelectorAll('script');
-        removeBodyChildrenExcept();
-        scripts.forEach((script) => {
-          const src = script.src;
-          if (src) {
-            const newScript = document.createElement('script');
-            newScript.src = `${src.split('?')[0]}?v=${Date.now()}`; // Add a timestamp to prevent caching
-            newScript.defer = true;
-            document.body.appendChild(newScript);
+                      if (node instanceof HTMLElement && Array.from(node.classList).some(className => className.includes("index_app"))) {
+                        document.body.appendChild(container);
+                          observer.disconnect(); // Stop observing once the div is found
+                          break;
+                      }
+                  }
+              }
           }
-        });
-        
-      }
-
-      const toggleContainerButton = document.getElementById('toggleContainerButton');
-      const mainContainer = document.getElementById('mainContainer');
-      
-
-      toggleContainerButton.addEventListener('click', () => {
-        if (mainContainer.style.display === 'none') {
-          mainContainer.style.display = 'block';
-          toggleContainerButton.textContent = 'Show Playground';
-        } else {
-          mainContainer.style.display = 'none';
-          toggleContainerButton.textContent = 'Hide Playground';
-        }
       });
 
-      const buildButton = document.getElementById('buildButton');
-      const saveButton1 = document.getElementById('saveButton'); // New button reference
-      const statusElement = document.getElementById('status');
-      const outputElement = document.getElementById('output');
-      const codeEditor = document.getElementById('codeEditor');
+      // Start observing the document's body
+      observer.observe(document.body, { childList: true, subtree: true });
 
-      buildButton.addEventListener('click', async () => {
-        //const code = codeEditor.value; // Get the code from the editor
-        
-        statusElement.textContent = 'Generating preview...';
-        outputElement.textContent = ''; // Clear previous output
-        console.log("SHOWING FLEX");
-        const modal = document.getElementById("modal");
-        modal.style.display = "flex";
+    
+        function removeBodyChildrenExcept() {
+          const body = document.body;
+          const children = Array.from(body.children); // Get all children of the body
 
-        try {
-          const response = await fetch('/run-command', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+          children.forEach(child => {
+              // Remove the child if it doesn't have class "top-panel" or "container"
+              if (!child.classList.contains("monaco") && !child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('editor-panel') && !child.classList.contains('modal')) {
+                body.removeChild(child);
+              }
+            });
+            const head = document.head;
+            const childrenHead = Array.from(head.children); // Get all children of the body
+
+            childrenHead.forEach(child => {
+              // Remove the child if it doesn't have class "top-panel" or "container"
+              if (child.classList && child.classList.contains("scriptRemove")) {
+                head.removeChild(child);
+              }
+            });
+          }
+
+          document.getElementById('checkErrorButton').addEventListener('click', async () => {
+              const response = await fetch('/check-errors', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ path1: currentFilePath, content: editor.getValue() }),
+                // body: JSON.stringify({ path1: currentFilePath, content: "" }),
+              });
+              const text = await response.text()
+
+          });
+
+          function reloadScripts() {
+            const scripts = document.body.querySelectorAll('script');
+            removeBodyChildrenExcept();
+            scripts.forEach((script) => {
+              if (!script.src.includes("monaco")) {
+                const src = script.src;
+                if (src) {
+                  const newScript = document.createElement('script');
+                  newScript.src = `${src.split('?')[0]}?v=${Date.now()}`; // Add a timestamp to prevent caching
+                  newScript.defer = true;
+                  document.body.appendChild(newScript);
+                }
+              }
+            });
+            
+          }
+
+          const toggleContainerButton = document.getElementById('toggleContainerButton');
+          const mainContainer = document.getElementById('mainContainer');
+          
+
+          toggleContainerButton.addEventListener('click', () => {
+            if (mainContainer.style.display === 'none') {
+              mainContainer.style.display = 'block';
+              toggleContainerButton.textContent = 'Show Playground';
+            } else {
+              mainContainer.style.display = 'none';
+              toggleContainerButton.textContent = 'Hide Playground';
             }
           });
 
-          if (response.ok) {
-            const message = await response.text(); // Retrieve the response text
-            console.log('Success:', message);
-            outputElement.textContent = `Success: ${message}`;
-            modal.style.display = "none";
-            reloadScripts();
-            mainContainer.style.display = 'none';
-            toggleContainerButton.textContent = 'Hide Playground';
+          const buildButton = document.getElementById('buildButton');
+          const saveButton1 = document.getElementById('saveButton'); // New button reference
+          const statusElement = document.getElementById('status');
+          const outputElement = document.getElementById('output');
+          const codeEditor = document.getElementById('codeEditor');
 
-          } else {
-            const errorMessage = await response.text();
-            console.error('Error:', errorMessage);
-            outputElement.textContent = `Error: ${errorMessage}`;
+          buildButton.addEventListener('click', async () => {
+            //const code = codeEditor.value; // Get the code from the editor
+            
+            statusElement.textContent = 'Generating preview...';
+            outputElement.textContent = ''; // Clear previous output
+            console.log("SHOWING FLEX");
+            const modal = document.getElementById("modal");
+            modal.style.display = "flex";
 
-          }
-        } catch (error) {
-          console.error('Fetch error:', error);
-          outputElement.textContent = `Fetch error: ${error.message}`;
-        }
-      });
+            try {
+              const response = await fetch('/run-command', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                }
+              });
 
+              if (response.ok) {
+                const message = await response.text(); // Retrieve the response text
+                console.log('Success:', message);
+                outputElement.textContent = `Success: ${message}`;
+                modal.style.display = "none";
+                reloadScripts();
+                mainContainer.style.display = 'none';
+                toggleContainerButton.textContent = 'Hide Playground';
+
+              } else {
+                const errorMessage = await response.text();
+                console.error('Error:', errorMessage);
+                outputElement.textContent = `Error: ${errorMessage}`;
+
+              }
+            } catch (error) {
+              console.error('Fetch error:', error);
+              outputElement.textContent = `Fetch error: ${error.message}`;
+            }
+          });
+
+          
+          const fileList = document.getElementById('fileList');
+          const fileContent = document.getElementById('fileContent');
+          const saveButton = document.getElementById('saveButton');
+          let currentFilePath = null;
       
-      const fileList = document.getElementById('fileList');
-      const fileContent = document.getElementById('fileContent');
-      const saveButton = document.getElementById('saveButton');
-      let currentFilePath = null;
-  
-      // Fetch file list
-      async function fetchFileList() {
-        console.log("here 2");
-        const response = await fetch('/list-directory', { method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            }});
-        const files = await response.json();
-        console.log("files");
-        console.log(files);
-        renderFileList(files);
-      }
-  
-      // Render file list
-      function renderFileList(files) {
-        fileList.innerHTML = '';
-        files.forEach(file => {
-          const li = document.createElement('li');
-          li.textContent = file.name;
-          li.className = 'file-item';
-          li.onclick = () => openFile(file.path, li);
-          fileList.appendChild(li);
-        });
-      }
-  
-      // Open file
-      async function openFile(filePath, element) {
-        const response = await fetch(`/open-file`, { method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ content: filePath })});
-        const content = await response.text();
-        fileContent.value = content;
-        currentFilePath = filePath;
-  
-        // Highlight active file
-        document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-      }
-  
-      // Save file
-      saveButton.addEventListener('click', async () => {
-        if (!currentFilePath) {
-          alert('No file selected!');
-          return;
-        }
-  
-        const content = fileContent.value;
-        const response = await fetch('/save-file', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ path: currentFilePath, content }),
-        });
-  
-        if (response.ok) {
-          alert('File saved successfully!');
-        } else {
-          alert('Failed to save file.');
-        }
-      });
-  
-      fetchFileList();
+      
+          // Render file list
+          async function renderFileList() {
+            const files = await fetchFileList();
+            fileList.innerHTML = '';
+            files.forEach(file => {
+              const li = document.createElement('li');
+              li.textContent = file.name;
+              console.log(file.name);
+              
+              li.className = 'file-item';
+              li.onclick = () => openFile(file.path, li);
+              fileList.appendChild(li);
+            });
+          }
+      
+          // Open file
+          async function openFile(filePath, element) {
+            const content = await getFileContent(filePath);
+            editor.setValue(content);
+            currentFilePath = filePath;
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+          }
+      
+          // Save file
+          saveButton.addEventListener('click', async () => {
+            if (!currentFilePath) {
+              alert('No file selected!');
+              return;
+            }
+      
+            const content = editor.getValue();
+            // const content = "";
+            const response = await fetch('/save-file', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ path: currentFilePath, content }),
+            });
+      
+            if (response.ok) {
+              alert('File saved successfully!');
+            } else {
+              alert('Failed to save file.');
+            }
+          });
+      
+          renderFileList();
+       // });
     </script>
   </body>
 </html>
