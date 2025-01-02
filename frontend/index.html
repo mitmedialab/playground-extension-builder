@@ -143,7 +143,6 @@
       height: 90%;
       font-family: 'Courier New', Courier, monospace;
       font-size: 1rem;
-      padding: 10px;
       background-color: #ecf0f1;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -225,10 +224,7 @@
     </div>
     </head>
     <body>
-    <!-- <div class="test"> -->
-  
-  <!-- <script async src="https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs/loader.js"></script> -->
-<!-- </div> -->
+
     <script defer src="runtime.js"></script>
     <script defer src="chunks/vendors-node_modules_pnpm_microbit_microbit-universal-hex_0_2_2_tslib_2_6_2_node_modules_micr-8f889f.6dce1edea4e57eb3ccf5.js"></script>
     <script defer src="chunks/vendors-node_modules_pnpm_core-js_2_6_12_node_modules_core-js_fn_array_includes_js-node_modul-b41ce8.1be7cd83ab653a07364e.js"></script>
@@ -266,13 +262,14 @@
           <div id="fileContent" placeholder="Select a file to edit..."></div>
           <div class="button-container">
             <button class="editButton" id="saveButton">Save</button>
-            <button class="editButton" id="checkErrorButton">Check Errors</button>
+            <!-- <button class="editButton" id="checkErrorButton">Check Errors</button> -->
             <button class="editButton" id="buildButton">Preview Extension</button>
           </div>
         </div>
       </div>
     </div>
     <script src="helper.js"></script>
+    <script src="svelte-monarch.js"></script>
     <script>
       let editor;
       const monacoLoader = document.createElement('script');
@@ -283,28 +280,36 @@
       monacoLoader.onload = () => {
           require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs' } });
           require(['vs/editor/editor.main'], function () {
-            editor = monaco.editor.create(document.getElementById('fileContent'), {
-              value: `// Select a file to edit`,
-              language: 'typescript',
-              theme: 'vs-dark',
-          });
-          
-          monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-              module: monaco.languages.typescript.ModuleKind.ESNext,
-              target: monaco.languages.typescript.ScriptTarget.ESNext,
-              allowNonTsExtensions: true,
-              allowSyntheticDefaultImports: true,
-          });
-          
+              editor = monaco.editor.create(document.getElementById('fileContent'), {
+                value: `// Select a file to edit`,
+                language: 'typescript',
+                theme: 'vs-dark',
+                padding: {
+                    top: 10,
+                    bottom: 10
+                }
+            });
+            
+            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                module: monaco.languages.typescript.ModuleKind.ESNext,
+                target: monaco.languages.typescript.ScriptTarget.ESNext,
+                allowNonTsExtensions: true,
+                allowSyntheticDefaultImports: true,
+            });
 
-          
-          monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-              noSemanticValidation: true,
-              noSyntaxValidation: false,
-          });
-          
-          monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
-          });
+            monaco.languages.register({ id: 'svelte' });
+            monaco.languages.setMonarchTokensProvider('svelte', {
+              tokenizer: svelteLanguage.tokenizer
+            });
+            
+            monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+                noSemanticValidation: true,
+                noSyntaxValidation: false,
+            });
+            
+            monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+            });
+
       };
       container.appendChild(monacoLoader);
 
@@ -350,18 +355,18 @@
             });
           }
 
-          document.getElementById('checkErrorButton').addEventListener('click', async () => {
-              const response = await fetch('/check-errors', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ path1: currentFilePath, content: editor.getValue() }),
-                // body: JSON.stringify({ path1: currentFilePath, content: "" }),
-              });
-              const text = await response.text()
+          // document.getElementById('checkErrorButton').addEventListener('click', async () => {
+          //     const response = await fetch('/check-errors', {
+          //       method: 'POST',
+          //       headers: {
+          //         'Content-Type': 'application/json',
+          //       },
+          //       body: JSON.stringify({ path1: currentFilePath, content: editor.getValue() }),
+          //       // body: JSON.stringify({ path1: currentFilePath, content: "" }),
+          //     });
+          //     const text = await response.text()
 
-          });
+          // });
 
           function reloadScripts() {
             const scripts = document.body.querySelectorAll('script');
@@ -464,6 +469,13 @@
           async function openFile(filePath, element) {
             const content = await getFileContent(filePath);
             editor.setValue(content);
+            const model = editor.getModel(); // Get the current model
+            if (filePath.includes(".svelte")) {
+              console.log("setting language");
+              monaco.editor.setModelLanguage(model, "svelte"); // Set the new language
+            } else {
+              monaco.editor.setModelLanguage(model, "typescript"); // Set the new language
+            }
             currentFilePath = filePath;
             document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
