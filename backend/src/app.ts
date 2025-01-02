@@ -9,13 +9,13 @@ const app = express();
 const frontendPath = path.resolve(__dirname, '../../frontend/');
 
 // Serve static files from the frontend directory
-app.use(express.static(frontendPath));
+app.use('/', express.static(frontendPath));
 app.use(express.json());
 
 const rootDir = path.resolve(__dirname, '../../');
 
 // Serve the main HTML file for all routes
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   const filePath = path.join(frontendPath, 'index.html');
   console.log(`Serving file: ${filePath}`); // Log the file being served
   res.sendFile(filePath, (err) => {
@@ -84,14 +84,18 @@ app.post('/run-command', (req: Request, res: Response) => {
   
   // Capture the standard output
   process.stdout.on('data', (data) => {
-    output += data.toString();
-    console.log(data.toString()); // Optionally log to the console
+    if (!data.includes("[plugin typescript]") || (data.includes("[plugin typescript]") && data.includes("extensions/src/simple_example"))) {
+      output += data.toString();
+      console.log(data.toString()); // Optionally log to the console
+    }
   });
   
   // Capture the standard error output
   process.stderr.on('data', (data) => {
-    errorOutput += data.toString();
-    console.error(data.toString()); // Optionally log errors to the console
+    if (!data.includes("[plugin typescript]") || (data.includes("[plugin typescript]") && data.includes("extensions/src/simple_example"))) {
+      errorOutput += data.toString();
+      console.error(data.toString()); // Optionally log errors to the console
+    }
   });
 
   // Handle termination of the process
@@ -172,6 +176,7 @@ app.post('/list-directory', (req, res) => {
   });
 });
 
+
 app.post('/open-file', (req, res) => {
   const { content } = req.body; // Explicitly cast to string
   const filePath = content;
@@ -196,28 +201,6 @@ app.post('/save-file', (req, res) => {
     if (err) return res.status(500).send(err.message);
     res.send('File saved successfully!');
   });
-});
-
-app.post('/show_playground', (req, res) => {
-  fs.writeFileSync(path.join(__dirname, 'playground.json'), JSON.stringify(true));
-  res.send('Data stored in file!');
-});
-
-app.post('/hide_playground', (req, res) => {
-  fs.writeFileSync(path.join(__dirname, 'playground.json'), JSON.stringify(false));
-  res.send('Data stored in file!');
-});
-
-app.post('/get_playground', (req, res) => {
-  fs.readFile(path.join(__dirname, 'playground.json'), 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading file:', err);
-      return;
-    }
-    res.json(data);
-    console.log('File content:', data);
-  });
-  
 });
 
   
