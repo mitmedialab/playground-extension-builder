@@ -30,10 +30,58 @@ console.log(process.argv);
 
 const bundleExtensions = fork(bundleExtensionsScript, process.argv);
 
+const args = process.argv.slice(2);
+const fullRunArg = args.find(arg => arg.startsWith('--first_run='));
+const fullRun = fullRunArg?.split('=')[1] === 'true';
+
 const childProcesses: Record<string, ChildProcess> = {
   bundleExtensions,
   serveGui: undefined
 }
+
+function waitForFileChange(filePath: string, timeout = 5000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let initialContent: string | null = null;
+
+    try {
+      initialContent = fs.readFileSync(filePath, 'utf-8');
+    } catch (err) {
+      // File might not exist yet; treat it as null
+      initialContent = null;
+    }
+
+    let resolved = false;
+
+    const watcher = fs.watch(filePath, async (eventType) => {
+      if (eventType === 'change') {
+        try {
+          const newContent = fs.readFileSync(filePath, 'utf-8');
+          if (newContent !== initialContent) {
+            watcher.close();
+            clearTimeout(timeoutId);
+            resolved = true;
+            resolve();
+          }
+        } catch (err) {
+          // Ignore read errors (e.g., file deleted mid-watch)
+        }
+      }
+    });
+
+    const timeoutId = setTimeout(() => {
+      if (!resolved) {
+        watcher.close();
+        reject(new Error(`Timeout: File ${filePath} did not change within ${timeout}ms`));
+      }
+    }, timeout);
+
+    process.on('exit', () => {
+      clearTimeout(timeoutId);
+      watcher.close();
+    });
+  });
+}
+
 
 
 function waitForFile(filePath: string, timeout = 5000): Promise<void> {
@@ -73,9 +121,16 @@ bundleExtensions.on("message", (msg: Message) => {
     case Conditon.ExtensionsSuccesfullyBundled:
       const extensionBundlesDirectory = path.join(scratchPackages.gui, "static", "extension-bundles");
       const auxiliaryFile = path.join(extensionBundlesDirectory, `AuxiliaryExtensionInfo.js`);
-      waitForFile(auxiliaryFile).then(() => {
+      const simplePrgFile = path.join(extensionBundlesDirectory, `simpleprg95grpexample.js`);
+      if (fullRun) {
+      // only do this on step 1
+        waitForFile(auxiliaryFile).then(() => {
+          Object.values(childProcesses).forEach(child => child?.kill());
+        });
+      } else {
         Object.values(childProcesses).forEach(child => child?.kill());
-      });
+      }
+      
       break;
   }
 });

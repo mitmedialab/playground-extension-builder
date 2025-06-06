@@ -196,26 +196,41 @@
     }
 
 
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
 
-.modal-footer button {
-  background-color: #16a085;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
+    .modal-footer button {
+      background-color: #16a085;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
 
-.modal-footer button:hover {
-  background-color: #1abc9c;
-}
+    .modal-footer button:hover {
+      background-color: #1abc9c;
+    }
+
+    .toolButton {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+    padding: 10px;
+    background-color: #16a085; /* Primary Blue */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
 
 
     </style>
@@ -228,7 +243,9 @@
     <script defer src="chunks/src_containers_gui_jsx-src_lib_app-state-hoc_jsx-src_lib_hash-parser-hoc_jsx.868d819c85a6b8fa71bd.js"></script>
     <script defer src="gui.js"></script>
     <div id="modal" class="modal">
+      
       <div class="modal-content">
+        <span class="close-button" onclick="document.getElementById('modal').style.display='none'">&times;</span>
         <h2 id="status">Pending</h2>
         <div id="output">Pending</div>
       </div>
@@ -256,12 +273,23 @@
         </div>
         <div id="editor">
           <h3>Editor</h3>
-          <div id="fileContent" placeholder="Select a file to edit..."></div>
-          <div class="button-container">
-            <button class="editButton" id="saveButton">Save</button>
-            <!-- <button class="editButton" id="checkErrorButton">Check Errors</button> -->
-            <button class="editButton" id="buildButton">Preview Extension</button>
+          <div style="display: flex; width: 100%; height: 100%">
+          <div id="left-panel" style="width: 20%; height: 90%; background-color: #f4f4f4; padding: 10px; border-right: 1px solid #ccc;">
+            <h3>Tools</h3>
+            <button class="toolButton" id="addReporterBlockButton">Add Reporter Block</button>
+            <button class="toolButton" id="addCommandBlockButton">Add Command Block</button>
+            <button class="toolButton" id="addHatBlockButton">Add Hat Block</button>
+            <button class="toolButton" id="addCustomBlockButton">Add Custom Block</button>
           </div>
+          <div id="right-panel" style="width:80%">
+            <div id="fileContent" placeholder="Select a file to edit..."></div>
+          </div>
+        </div>
+        <div class="button-container" style="position: relative; bottom: 8vh">
+          <button class="editButton" id="saveButton">Save</button>
+          <!-- <button class="editButton" id="checkErrorButton">Check Errors</button> -->
+          <button class="editButton" id="buildButton">Preview Extension</button>
+        </div>
         </div>
       </div>
     </div>
@@ -305,10 +333,30 @@
             });
             
             monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
-            });
+            editor.onDidChangeModelContent(() => {
+        // Clear any existing save timeout
+        clearTimeout(saveTimeout);
+
+        // Debounce save by 500ms to avoid spamming the server on every keystroke
+        saveTimeout = setTimeout(autoSaveFile, 500);
+
+        // Show "Saving..." while typing
+        saveButton.innerText = 'Saving...';
+      });
+      });
 
       };
       container.appendChild(monacoLoader);
+
+      fetch('/run-command', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  first_run: true // or false, depending on your logic
+                })
+              });
 
       // Observe changes to the DOM
       const observer = new MutationObserver((mutationsList) => {
@@ -326,6 +374,47 @@
               }
           }
       });
+
+            let saveTimeout;
+      let isSaving = false;
+
+      
+
+      async function autoSaveFile() {
+        if (!currentFilePath || isSaving) return;
+
+        isSaving = true;
+
+        const content = editor.getValue();
+
+        try {
+          const response = await fetch('/save-file', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ path: currentFilePath, content }),
+          });
+
+          if (response.ok) {
+            saveButton.innerText = 'Saved';
+            // const response = fetch('/run-command', {
+            //     method: 'POST',
+            //     headers: {
+            //       'Content-Type': 'application/json',
+            //     }
+            //   });
+          } else {
+            saveButton.innerText = 'Failed to save';
+          }
+        } catch (err) {
+          console.error('Save error:', err);
+          saveButton.innerText = 'Error saving';
+        }
+
+        isSaving = false;
+      }
+
 
       // Start observing the document's body
       observer.observe(document.body, { childList: true, subtree: true });
@@ -402,6 +491,15 @@
           const outputElement = document.getElementById('output');
           const codeEditor = document.getElementById('codeEditor');
 
+        //   const socket = new WebSocket('ws://localhost:8081');
+
+        // socket.addEventListener('message', (event) => {
+        //   if (event.data === 'reload') {
+        //     console.log("RELOAD DATA");
+        //     reloadScripts();
+        //   }
+        // });
+
           buildButton.addEventListener('click', async () => {
             //const code = codeEditor.value; // Get the code from the editor
             
@@ -416,7 +514,10 @@
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({
+                  first_run: false // or false, depending on your logic
+                })
               });
 
               if (response.ok) {

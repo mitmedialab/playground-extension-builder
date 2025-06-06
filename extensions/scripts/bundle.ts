@@ -5,6 +5,7 @@ import options from "$root/scripts/options";
 import bundleFramework from "./bundles/framework";
 import { bundleExtension } from "./bundles";
 import { hackToFilterOutUnhelpfulRollupLogs } from './utils/rollupHelper';
+import fs from 'fs';
 
 const specialGlobs = new Map([
   ["all", "!([.]|commo*)*/"], // all folders EXCEPT ".templates" & "common"
@@ -12,13 +13,21 @@ const specialGlobs = new Map([
 ]);
 
 const { watch, include, parrallel } = options(process.argv);
+const args = process.argv.slice(2);
+console.log("ARGS", args);
+const fullRunArg = args.find(arg => arg.startsWith('--first_run='));
+const fullRun = fullRunArg?.split('=')[1] === 'true';
+console.log("ONE", fullRunArg?.split('=')[1])
+console.log("FULL RUN,", fullRun);
 const globs = (Array.isArray(include) ? include : [include])
   .map(pattern => specialGlobs.has(pattern) ? specialGlobs.get(pattern) : pattern);
 
 hackToFilterOutUnhelpfulRollupLogs();
 
 (async () => {
-  await bundleFramework(watch);
+  if (fullRun) {
+    await bundleFramework(watch);
+  }
 
   const extensionDirectories = Array.from(new Set((await Promise.all(globs.map(extensionGlob))).flat()));
 

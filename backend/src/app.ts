@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { exec, spawn, fork, type ChildProcess } from 'child_process';
+import WebSocket, { WebSocketServer } from 'ws';
 import path from 'path';
 import fs from 'fs';
 
@@ -13,6 +14,23 @@ app.use('/', express.static(frontendPath));
 app.use(express.json());
 
 const rootDir = path.resolve(__dirname, '../../');
+
+const PORT = 8081;
+const wss = new WebSocketServer({ port: PORT });
+
+const fileToWatch = "/Users/mayarajan/mit-media/playground-extension-builder/frontend/static/extension-bundles/simpleprg95grpexample.js"
+
+fs.watch(fileToWatch, (eventType) => {
+  console.log("EVENT TYPE");
+  if (eventType === 'change') {
+    console.log('File changed. Broadcasting reload...');
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send('reload');
+      }
+    });
+  }
+});
 
 // Serve the main HTML file for all routes
 app.get('/', (req, res) => {
@@ -71,7 +89,11 @@ function readAuxiliaryExtensionInfo(filePath: string): Promise<any> {
 }
 
 app.post('/run-command', (req: Request, res: Response) => {
-  const command = `cd ${rootDir} && pnpm ts:node --project ./extensions/scripts/tsconfig.json ./scripts/build.ts --include simple_example`;
+  
+  const { first_run } = req.body; // <-- Ensure this comes from the POST body
+  const firstRunArg = first_run ? '--first_run=true' : '--first_run=false';
+
+  const command = `cd ${rootDir} && pnpm ts:node --project ./extensions/scripts/tsconfig.json ./scripts/build.ts --include simple_example ${firstRunArg}`;
 
   const process = spawn(command, {
     shell: true,
