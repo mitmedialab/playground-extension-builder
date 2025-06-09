@@ -32,5 +32,9 @@
     "ts-node": {
       "typescript": "$typescript"
     }
+  },
+  "dependencies": {
+    "monaco-editor": "^0.52.2",
+    "monaco-svelte": "^1.1.1"
   }
 }

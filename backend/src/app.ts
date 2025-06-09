@@ -18,19 +18,21 @@ const rootDir = path.resolve(__dirname, '../../');
 const PORT = 8081;
 const wss = new WebSocketServer({ port: PORT });
 
-const fileToWatch = "/Users/mayarajan/mit-media/playground-extension-builder/frontend/static/extension-bundles/simpleprg95grpexample.js"
+// // TODO : CHANGE 
+// const fileToWatch = "/Users/mayarajan/mit-media/playground-extension-builder/frontend/static/extension-bundles/simpleprg95grpexample.js"
 
-fs.watch(fileToWatch, (eventType) => {
-  console.log("EVENT TYPE");
-  if (eventType === 'change') {
-    console.log('File changed. Broadcasting reload...');
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send('reload');
-      }
-    });
-  }
-});
+// // NOT NEEDED
+// fs.watch(fileToWatch, (eventType) => {
+//   console.log("EVENT TYPE");
+//   if (eventType === 'change') {
+//     console.log('File changed. Broadcasting reload...');
+//     wss.clients.forEach((client) => {
+//       if (client.readyState === WebSocket.OPEN) {
+//         client.send('reload');
+//       }
+//     });
+//   }
+// });
 
 // Serve the main HTML file for all routes
 app.get('/', (req, res) => {
@@ -64,6 +66,7 @@ function copyFile(source: string, destination: string, callback: Function) {
   });
 }
 
+// READ THE AUXILIARY EXTENSION JSON
 function readAuxiliaryExtensionInfo(filePath: string): Promise<any> {
   return new Promise((resolve, reject) => {
       fs.readFile(filePath, 'utf8', (err, data) => {
@@ -88,8 +91,10 @@ function readAuxiliaryExtensionInfo(filePath: string): Promise<any> {
   });
 }
 
+// BUILD THE EXTENSION
 app.post('/run-command', (req: Request, res: Response) => {
   
+  // Do the full build or partial build
   const { first_run } = req.body; // <-- Ensure this comes from the POST body
   const firstRunArg = first_run ? '--first_run=true' : '--first_run=false';
 
@@ -127,16 +132,13 @@ app.post('/run-command', (req: Request, res: Response) => {
       // If the build fails, send an error message to the frontend
       res.status(500).send('Build failed');
     } else {
-      // If the build succeeds, send a success message to the frontend
+      // If the build succeeds, copy all necessary files to the frontend
       const sourcePath = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/simpleprg95grpexample.js');
       const destinationPath = path.join(rootDir, 'frontend/static/extension-bundles/simpleprg95grpexample.js');
       const sourcePath1 = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/simpleprg95grpexample.js.map');
       const destinationPath1 = path.join(rootDir, 'frontend/static/extension-bundles/simpleprg95grpexample.js.map');
       const auxiliaryPathFull = path.join(rootDir, 'frontend/static/extension-bundles/AuxiliaryExtensionInfo.js');
       const auxiliaryPathExtension = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/AuxiliaryExtensionInfo.js');
-
-      // Helper function to copy a file
-      
 
       // Copy both files
       copyFile(sourcePath, destinationPath, (err1: Error) => {
@@ -149,14 +151,11 @@ app.post('/run-command', (req: Request, res: Response) => {
                 res.status(500).send('Error copying the second file');
             } else {
                 readAuxiliaryExtensionInfo(auxiliaryPathFull).then((fullJSON) => {
-                  console.log("copied first");
                   readAuxiliaryExtensionInfo(auxiliaryPathExtension).then((extensionJSON) => {
-                    console.log("copied second");
                     const name = Object.keys(extensionJSON)[0];
                     fullJSON[name] = extensionJSON[name];
                     const content = `var AuxiliaryExtensionInfo = ${JSON.stringify(fullJSON)};`;
                     fs.writeFile(auxiliaryPathFull, content, () => {
-                      console.log("FILE WRITTEN");
                       res.status(200).send('Build completed successfully and files moved');
                     });
                     
@@ -169,24 +168,24 @@ app.post('/run-command', (req: Request, res: Response) => {
   });
 });
 
-app.post('/write-file', (req: Request, res: Response) => {
-  const filePath = path.join(rootDir, 'extensions/src/simple_example/index.ts');
-  const { content } = req.body;
+// app.post('/write-file', (req: Request, res: Response) => {
+//   const filePath = path.join(rootDir, 'extensions/src/simple_example/index.ts');
+//   const { content } = req.body;
 
-  if (!content) {
-    return res.status(400).send('Content is required');
-  }
+//   if (!content) {
+//     return res.status(400).send('Content is required');
+//   }
 
-  fs.writeFile(filePath, content, 'utf8', (err) => {
-    if (err) {
-      console.error('Error writing to file:', err);
-      return res.status(500).send('Failed to write to file');
-    }
+//   fs.writeFile(filePath, content, 'utf8', (err) => {
+//     if (err) {
+//       console.error('Error writing to file:', err);
+//       return res.status(500).send('Failed to write to file');
+//     }
 
-    console.log(`File written successfully to ${filePath}`);
-    res.status(200).send('File written successfully');
-  });
-});
+//     console.log(`File written successfully to ${filePath}`);
+//     res.status(200).send('File written successfully');
+//   });
+// });
 
 
 app.post('/list-directory', (req, res) => {

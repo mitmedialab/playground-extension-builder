@@ -17,16 +17,13 @@ const bundleExtensionsScript = path.join(extensionsScripts, "bundle.ts");
 
 const [guiBuildDir, rootBuildDir] = [gui, root].map(dir => path.join(dir, "build"));
 
-const clearBuildDirs = () => [guiBuildDir, rootBuildDir]
-  .filter(fs.existsSync)
-  .forEach(dir => fs.rmSync(dir, { force: true, recursive: true }));
+// const clearBuildDirs = () => [guiBuildDir, rootBuildDir]
+//   .filter(fs.existsSync)
+//   .forEach(dir => fs.rmSync(dir, { force: true, recursive: true }));
 
-const copyOverBuild = () => fs.existsSync(guiBuildDir)
-  ? fs.renameSync(guiBuildDir, rootBuildDir)
-  : console.error("Could not locate build");
-
-console.log("PROCESS")
-console.log(process.argv);
+// const copyOverBuild = () => fs.existsSync(guiBuildDir)
+//   ? fs.renameSync(guiBuildDir, rootBuildDir)
+//   : console.error("Could not locate build");
 
 const bundleExtensions = fork(bundleExtensionsScript, process.argv);
 
@@ -39,48 +36,48 @@ const childProcesses: Record<string, ChildProcess> = {
   serveGui: undefined
 }
 
-function waitForFileChange(filePath: string, timeout = 5000): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let initialContent: string | null = null;
+// function waitForFileChange(filePath: string, timeout = 5000): Promise<void> {
+//   return new Promise((resolve, reject) => {
+//     let initialContent: string | null = null;
 
-    try {
-      initialContent = fs.readFileSync(filePath, 'utf-8');
-    } catch (err) {
-      // File might not exist yet; treat it as null
-      initialContent = null;
-    }
+//     try {
+//       initialContent = fs.readFileSync(filePath, 'utf-8');
+//     } catch (err) {
+//       // File might not exist yet; treat it as null
+//       initialContent = null;
+//     }
 
-    let resolved = false;
+//     let resolved = false;
 
-    const watcher = fs.watch(filePath, async (eventType) => {
-      if (eventType === 'change') {
-        try {
-          const newContent = fs.readFileSync(filePath, 'utf-8');
-          if (newContent !== initialContent) {
-            watcher.close();
-            clearTimeout(timeoutId);
-            resolved = true;
-            resolve();
-          }
-        } catch (err) {
-          // Ignore read errors (e.g., file deleted mid-watch)
-        }
-      }
-    });
+//     const watcher = fs.watch(filePath, async (eventType) => {
+//       if (eventType === 'change') {
+//         try {
+//           const newContent = fs.readFileSync(filePath, 'utf-8');
+//           if (newContent !== initialContent) {
+//             watcher.close();
+//             clearTimeout(timeoutId);
+//             resolved = true;
+//             resolve();
+//           }
+//         } catch (err) {
+//           // Ignore read errors (e.g., file deleted mid-watch)
+//         }
+//       }
+//     });
 
-    const timeoutId = setTimeout(() => {
-      if (!resolved) {
-        watcher.close();
-        reject(new Error(`Timeout: File ${filePath} did not change within ${timeout}ms`));
-      }
-    }, timeout);
+//     const timeoutId = setTimeout(() => {
+//       if (!resolved) {
+//         watcher.close();
+//         reject(new Error(`Timeout: File ${filePath} did not change within ${timeout}ms`));
+//       }
+//     }, timeout);
 
-    process.on('exit', () => {
-      clearTimeout(timeoutId);
-      watcher.close();
-    });
-  });
-}
+//     process.on('exit', () => {
+//       clearTimeout(timeoutId);
+//       watcher.close();
+//     });
+//   });
+// }
 
 
 
@@ -121,7 +118,6 @@ bundleExtensions.on("message", (msg: Message) => {
     case Conditon.ExtensionsSuccesfullyBundled:
       const extensionBundlesDirectory = path.join(scratchPackages.gui, "static", "extension-bundles");
       const auxiliaryFile = path.join(extensionBundlesDirectory, `AuxiliaryExtensionInfo.js`);
-      const simplePrgFile = path.join(extensionBundlesDirectory, `simpleprg95grpexample.js`);
       if (fullRun) {
       // only do this on step 1
         waitForFile(auxiliaryFile).then(() => {

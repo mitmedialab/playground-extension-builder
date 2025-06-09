@@ -7,14 +7,14 @@ async function fetchFileList() {
     return files;
   }
 
-  async function fetchCommonList() {
-    const response = await fetch('/list-common-directory', { method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }});
-    const files = await response.json();
-    return files;
-  }
+  // async function fetchCommonList() {
+  //   const response = await fetch('/list-common-directory', { method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       }});
+  //   const files = await response.json();
+  //   return files;
+  // }
 
 async function getFileContent(filePath) {
     const response = await fetch(`/open-file`, { method: 'POST',

@@ -296,6 +296,7 @@
     <script src="helper.js"></script>
     <script src="svelte-monarch.js"></script>
     <script>
+      // START UP THE EDITOR
       let editor;
       const monacoLoader = document.createElement('script');
       const container = document.createElement('div');
@@ -334,37 +335,38 @@
             
             monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
             editor.onDidChangeModelContent(() => {
-        // Clear any existing save timeout
-        clearTimeout(saveTimeout);
+              // Clear any existing save timeout
+              clearTimeout(saveTimeout);
 
-        // Debounce save by 500ms to avoid spamming the server on every keystroke
-        saveTimeout = setTimeout(autoSaveFile, 500);
+              // Debounce save by 500ms to avoid spamming the server on every keystroke
+              saveTimeout = setTimeout(autoSaveFile, 500);
 
-        // Show "Saving..." while typing
-        saveButton.innerText = 'Saving...';
-      });
-      });
-
+              // Show "Saving..." while typing
+              saveButton.innerText = 'Saving...';
+            });
+          });
       };
+
       container.appendChild(monacoLoader);
 
+      // BUILD THE FULL COMMAND AT START
       fetch('/run-command', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  first_run: true // or false, depending on your logic
-                })
-              });
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          first_run: true // or false, depending on your logic
+        })
+      });
 
+      // ONLY ADD THE PLAYGROUND AFTER THE SCRIPTS LOAD
       // Observe changes to the DOM
       const observer = new MutationObserver((mutationsList) => {
           for (const mutation of mutationsList) {
               if (mutation.type === 'childList') {
                   const addedNodes = Array.from(mutation.addedNodes);
                   for (const node of addedNodes) {
-
                       if (node instanceof HTMLElement && Array.from(node.classList).some(className => className.includes("index_app"))) {
                         document.body.appendChild(container);
                           observer.disconnect(); // Stop observing once the div is found
@@ -374,11 +376,11 @@
               }
           }
       });
+      observer.observe(document.body, { childList: true, subtree: true });
 
-            let saveTimeout;
+      // AUTOMATICALY SAVE THE FILE
+      let saveTimeout;
       let isSaving = false;
-
-      
 
       async function autoSaveFile() {
         if (!currentFilePath || isSaving) return;
@@ -414,32 +416,29 @@
 
         isSaving = false;
       }
+      
 
+      // Remove the previous version of the Playground
+      function removeBodyChildrenExcept() {
+        const body = document.body;
+        const children = Array.from(body.children); // Get all children of the body
 
-      // Start observing the document's body
-      observer.observe(document.body, { childList: true, subtree: true });
+        children.forEach(child => {
+            // Remove the child if it doesn't have class "top-panel" or "container"
+            if (!child.classList.contains("monaco") && !child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('editor-panel') && !child.classList.contains('modal')) {
+              body.removeChild(child);
+            }
+          });
+          const head = document.head;
+          const childrenHead = Array.from(head.children); // Get all children of the body
 
-    
-        function removeBodyChildrenExcept() {
-          const body = document.body;
-          const children = Array.from(body.children); // Get all children of the body
-
-          children.forEach(child => {
-              // Remove the child if it doesn't have class "top-panel" or "container"
-              if (!child.classList.contains("monaco") && !child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('editor-panel') && !child.classList.contains('modal')) {
-                body.removeChild(child);
-              }
-            });
-            const head = document.head;
-            const childrenHead = Array.from(head.children); // Get all children of the body
-
-            childrenHead.forEach(child => {
-              // Remove the child if it doesn't have class "top-panel" or "container"
-              if (child.classList && child.classList.contains("scriptRemove")) {
-                head.removeChild(child);
-              }
-            });
-          }
+          childrenHead.forEach(child => {
+            // Remove the child if it doesn't have class "top-panel" or "container"
+            if (child.classList && child.classList.contains("scriptRemove")) {
+              head.removeChild(child);
+            }
+          });
+        }
 
           // document.getElementById('checkErrorButton').addEventListener('click', async () => {
           //     const response = await fetch('/check-errors', {
@@ -451,9 +450,9 @@
           //       // body: JSON.stringify({ path1: currentFilePath, content: "" }),
           //     });
           //     const text = await response.text()
-
           // });
 
+          // Reload the scripts
           function reloadScripts() {
             const scripts = document.body.querySelectorAll('script');
             removeBodyChildrenExcept();
@@ -471,9 +470,12 @@
             
           }
 
+
+
+          // CODE TO HANDLE PLAYGROUND TAB
           const toggleContainerButton = document.getElementById('toggleContainerButton');
           const mainContainer = document.getElementById('mainContainer');
-          
+
 
           toggleContainerButton.addEventListener('click', () => {
             if (mainContainer.style.display === 'none') {
@@ -485,27 +487,32 @@
             }
           });
 
+          // const socket = new WebSocket('ws://localhost:8081');
+          // socket.addEventListener('message', (event) => {
+          //   if (event.data === 'reload') {
+          //     console.log("RELOAD DATA");
+          //     reloadScripts();
+          //   }
+          // });
+
+
+          // BUTTON HANDLERS
           const buildButton = document.getElementById('buildButton');
-          const saveButton1 = document.getElementById('saveButton'); // New button reference
           const statusElement = document.getElementById('status');
           const outputElement = document.getElementById('output');
           const codeEditor = document.getElementById('codeEditor');
+          const fileList = document.getElementById('fileList');
+          const fileContent = document.getElementById('fileContent');
+          const saveButton = document.getElementById('saveButton');
 
-        //   const socket = new WebSocket('ws://localhost:8081');
+          let currentFilePath = null;
 
-        // socket.addEventListener('message', (event) => {
-        //   if (event.data === 'reload') {
-        //     console.log("RELOAD DATA");
-        //     reloadScripts();
-        //   }
-        // });
-
+          // BUILD THE PLAYGROUND
           buildButton.addEventListener('click', async () => {
             //const code = codeEditor.value; // Get the code from the editor
             
             statusElement.textContent = 'Generating preview...';
             outputElement.textContent = ''; // Clear previous output
-            console.log("SHOWING FLEX");
             const modal = document.getElementById("modal");
             modal.style.display = "flex";
 
@@ -516,7 +523,7 @@
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  first_run: false // or false, depending on your logic
+                  first_run: false 
                 })
               });
 
@@ -541,45 +548,8 @@
             }
           });
 
-          
-          const fileList = document.getElementById('fileList');
-          const fileContent = document.getElementById('fileContent');
-          const saveButton = document.getElementById('saveButton');
-          let currentFilePath = null;
-      
-      
-          // Render file list
-          async function renderFileList() {
-            const files = await fetchFileList();
-            fileList.innerHTML = '';
-            files.forEach(file => {
-              const li = document.createElement('li');
-              li.textContent = file.name;
-              console.log(file.name);
-              
-              li.className = 'file-item';
-              li.onclick = () => openFile(file.path, li);
-              fileList.appendChild(li);
-            });
-          }
-      
-          // Open file
-          async function openFile(filePath, element) {
-            const content = await getFileContent(filePath);
-            editor.setValue(content);
-            const model = editor.getModel(); // Get the current model
-            if (filePath.includes(".svelte")) {
-              console.log("setting language");
-              monaco.editor.setModelLanguage(model, "svelte"); // Set the new language
-            } else {
-              monaco.editor.setModelLanguage(model, "typescript"); // Set the new language
-            }
-            currentFilePath = filePath;
-            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-          }
-      
-          // Save file
+
+          // SAVE THE FILE
           saveButton.addEventListener('click', async () => {
             if (!currentFilePath) {
               alert('No file selected!');
@@ -603,8 +573,39 @@
             }
           });
       
+          // POPULATE THE FILE LIST
+          async function renderFileList() {
+            const files = await fetchFileList();
+            fileList.innerHTML = '';
+            files.forEach(file => {
+              const li = document.createElement('li');
+              li.textContent = file.name;
+              console.log(file.name);
+              
+              li.className = 'file-item';
+              li.onclick = () => openFile(file.path, li);
+              fileList.appendChild(li);
+            });
+          }
           renderFileList();
-       // });
+      
+          // OPEN THE SELECTED FILE
+          async function openFile(filePath, element) {
+            const content = await getFileContent(filePath);
+            editor.setValue(content);
+            const model = editor.getModel(); // Get the current model
+            if (filePath.includes(".svelte")) {
+              console.log("setting language");
+              monaco.editor.setModelLanguage(model, "svelte"); // Set the new language
+            } else {
+              monaco.editor.setModelLanguage(model, "typescript"); // Set the new language
+            }
+            currentFilePath = filePath;
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+          }
+      
+          
     </script>
   </body>
 </html>
