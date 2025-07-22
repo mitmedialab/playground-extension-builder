@@ -19,13 +19,13 @@
     "etest": "pnpm test:extensions"
   },
   "devDependencies": {
-    "@types/node": "20.12.2",
+    "@types/node": "^20.12.2",
     "@types/webgl2": "^0.0.6",
     "@types/yargs": "^17.0.32",
-    "ts-node": "10.9.1",
+    "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.1",
     "tslib": "^2.4.1",
-    "typescript": "5.4.5",
+    "typescript": "latest",
     "yargs": "^17.7.2"
   },
   "overrides": {
