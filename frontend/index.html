@@ -517,6 +517,7 @@
             modal.style.display = "flex";
 
             try {
+              reloadScripts();
               const response = await fetch('/run-command', {
                 method: 'POST',
                 headers: {
@@ -526,7 +527,7 @@
                   first_run: false 
                 })
               });
-              reloadScripts();
+              
               if (response.ok) {
                 const message = await response.text(); // Retrieve the response text
                 console.log('Success:', message);
