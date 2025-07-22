@@ -18,21 +18,6 @@ const rootDir = path.resolve(__dirname, '../../');
 const PORT = 8081;
 const wss = new WebSocketServer({ port: PORT });
 
-// // TODO : CHANGE 
-// const fileToWatch = "/Users/mayarajan/mit-media/playground-extension-builder/frontend/static/extension-bundles/simpleprg95grpexample.js"
-
-// // NOT NEEDED
-// fs.watch(fileToWatch, (eventType) => {
-//   console.log("EVENT TYPE");
-//   if (eventType === 'change') {
-//     console.log('File changed. Broadcasting reload...');
-//     wss.clients.forEach((client) => {
-//       if (client.readyState === WebSocket.OPEN) {
-//         client.send('reload');
-//       }
-//     });
-//   }
-// });
 
 // Serve the main HTML file for all routes
 app.get('/', (req, res) => {
@@ -193,6 +178,7 @@ app.post('/list-directory', (req, res) => {
   fs.readdir(directoryPath, (err, files) => {
     if (err) return res.status(500).send(err.message);
     const fileList = files.map(file => ({ name: file, path: `${directoryPath}/${file}` }));
+    console.log("FILE", fileList);
     return res.status(200).send(JSON.stringify(fileList));
   });
 });
