@@ -99,6 +99,9 @@ app.post('/run-command', (req: Request, res: Response) => {
     if (!data.includes("[plugin typescript]") || (data.includes("[plugin typescript]") && data.includes("extensions/src/simple_example"))) {
       output += data.toString();
       console.log(data.toString()); // Optionally log to the console
+      if (data.toString().includes(":  END")) {
+        process.kill();
+      }
     }
   });
   
