@@ -31,17 +31,17 @@
     "sanitize-filename": "^1.6.3",
     "svelte-preprocess": "^5.0.0",
     "tslib": "^2.5.0",
-    "typescript": "^5.4.5"
+    "typescript": "5.4.5"
   },
   "overrides": {
     "@rollup/plugin-typescript": {
-      "typescript": "$typescript"
+      "typescript": "5.4.5"
     },
     "svelte-preprocess": {
-      "typescript": "$typescript"
+      "typescript": "5.4.5"
     },
     "tslib": {
-      "typescript": "$typescript"
+      "typescript": "5.4.5"
     }
   },
   "dependencies": {
