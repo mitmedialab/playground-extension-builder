@@ -245,7 +245,7 @@
     <div id="modal" class="modal">
       
       <div class="modal-content">
-        <span class="close-button" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+        <!-- <span class="close-button" onclick="document.getElementById('modal').style.display='none'">&times;</span> -->
         <h2 id="status">Pending</h2>
         <div id="output">Pending</div>
       </div>
@@ -295,7 +295,9 @@
     </div>
     <script src="helper.js"></script>
     <script src="svelte-monarch.js"></script>
-    <script>
+    <script type="module">
+    
+
       // START UP THE EDITOR
       let editor;
       const monacoLoader = document.createElement('script');
@@ -359,6 +361,42 @@
           first_run: true // or false, depending on your logic
         })
       });
+
+      async function runBuildInWebContainer(firstRun = false) {
+        const firstRunArg = `--first_run=${firstRun ? 'true' : 'false'}`;
+
+        const command = [
+          'pnpm',
+          'ts:node',
+          '--project',
+          './extensions/scripts/tsconfig.json',
+          './scripts/build.ts',
+          '--include',
+          'simple_example',
+          firstRunArg
+        ];
+
+        const process = await webcontainerInstance.spawn(command[0], command.slice(1));
+
+        process.output.pipeTo(new WritableStream({
+          write(data) {
+            // Optional: log to console or UI
+            console.log(data);
+          }
+        }));
+
+        const exitCode = await process.exit;
+
+        if (exitCode !== 0) {
+          console.error('Build failed');
+          alert('Build failed');
+          return;
+        }
+
+        // Now move files and rewrite JSON
+        await handlePostBuildFileChanges();
+      }
+
 
       // ONLY ADD THE PLAYGROUND AFTER THE SCRIPTS LOAD
       // Observe changes to the DOM
@@ -526,6 +564,7 @@
                   first_run: false 
                 })
               });
+              reloadScripts();
 
               if (response.ok) {
                 const message = await response.text(); // Retrieve the response text
@@ -588,6 +627,7 @@
             });
           }
           renderFileList();
+          console.log("rendering");
       
           // OPEN THE SELECTED FILE
           async function openFile(filePath, element) {
