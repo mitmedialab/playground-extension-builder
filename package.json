@@ -30,7 +30,7 @@
   },
   "overrides": {
     "ts-node": {
-      "typescript": "$typescript"
+      "typescript": "5.4.5"
     }
   },
   "dependencies": {
