@@ -36,9 +36,6 @@ coverage
 scratch-packages/scratch-gui/static/
 scratch-packages/scratch-gui/src/generated/
 
-# Exclude everything in extensions/src
-extensions/src/*
-
 # Include common and .templates directories
 !extensions/src/common/
 !extensions/src/.templates/
