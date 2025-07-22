@@ -99,8 +99,38 @@ app.post('/run-command', (req: Request, res: Response) => {
     if (!data.includes("[plugin typescript]") || (data.includes("[plugin typescript]") && data.includes("extensions/src/simple_example"))) {
       output += data.toString();
       console.log(data.toString()); // Optionally log to the console
-      if (data.toString().includes(":  END")) {
-        process.kill();
+      if (data.toString().includes("simple_example:  END")) {
+        const sourcePath = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/simpleprg95grpexample.js');
+      const destinationPath = path.join(rootDir, 'frontend/static/extension-bundles/simpleprg95grpexample.js');
+      const sourcePath1 = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/simpleprg95grpexample.js.map');
+      const destinationPath1 = path.join(rootDir, 'frontend/static/extension-bundles/simpleprg95grpexample.js.map');
+      const auxiliaryPathFull = path.join(rootDir, 'frontend/static/extension-bundles/AuxiliaryExtensionInfo.js');
+      const auxiliaryPathExtension = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/AuxiliaryExtensionInfo.js');
+
+      // Copy both files
+      copyFile(sourcePath, destinationPath, (err1: Error) => {
+        if (err1) {
+            res.status(500).send('Error copying the first file');
+            return;
+        }
+        copyFile(sourcePath1, destinationPath1, (err2: Error) => {
+            if (err2) {
+                res.status(500).send('Error copying the second file');
+            } else {
+                readAuxiliaryExtensionInfo(auxiliaryPathFull).then((fullJSON) => {
+                  readAuxiliaryExtensionInfo(auxiliaryPathExtension).then((extensionJSON) => {
+                    const name = Object.keys(extensionJSON)[0];
+                    fullJSON[name] = extensionJSON[name];
+                    const content = `var AuxiliaryExtensionInfo = ${JSON.stringify(fullJSON)};`;
+                    fs.writeFile(auxiliaryPathFull, content, () => {
+                      res.status(200).send('Build completed successfully and files moved');
+                    });
+                    
+                  });
+                })
+            }
+        });
+      });
       }
     }
   });
