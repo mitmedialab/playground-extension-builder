@@ -25,12 +25,12 @@
     "ts-node": "10.9.1",
     "tsconfig-paths": "^4.1.1",
     "tslib": "^2.4.1",
-    "typescript": "5.4.5",
+    "typescript": "^5.4.5",
     "yargs": "^17.7.2"
   },
   "overrides": {
     "ts-node": {
-      "typescript": "5.4.5"
+      "typescript": "$typescript"
     }
   },
   "dependencies": {
