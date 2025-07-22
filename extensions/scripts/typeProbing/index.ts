@@ -68,9 +68,7 @@ export const extractMethodTypesFromExtension = (info: BundleInfo): ProgramBasedT
 const probeExtensionProgram = ({ indexFile }: BundleInfo, program: ts.Program) => {
   const checker = program.getTypeChecker();
   const container = { checker, type: null as ts.InterfaceType, node: null as ts.Node, base: null as ts.BaseType };
-  console.log("INDEX", indexFile);
   ts.forEachChild(program.getSourceFile(indexFile), child => {
-    console.log("CHILD", child);
     if (child.kind !== ts.SyntaxKind.ClassDeclaration) return;
     const type = checker.getTypeAtLocation(child);
     if (!type.isClass() || type?.symbol?.name !== "default") return;
@@ -78,7 +76,6 @@ const probeExtensionProgram = ({ indexFile }: BundleInfo, program: ts.Program) =
     container.node = child;
     container.base = checker.getBaseTypes(type)[0];
   });
-  console.log("CONTAINER", container);
   if (!container.type) throw new Error("Unable to locate extension type");
   if (!container.base) throw new Error("Unable to locate base extension type");
   return container;

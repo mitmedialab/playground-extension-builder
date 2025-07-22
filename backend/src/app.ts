@@ -178,8 +178,7 @@ app.post('/list-directory', (req, res) => {
   fs.readdir(directoryPath, (err, files) => {
     if (err) return res.status(500).send(err.message);
     const fileList = files.map(file => ({ name: file, path: `${directoryPath}/${file}` }));
-    console.log("FILE", fileList);
-    return res.status(200).send(JSON.stringify(fileList));
+    return res.status(200).json(fileList);
   });
 });
 
