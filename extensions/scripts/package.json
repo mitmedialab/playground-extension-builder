@@ -16,7 +16,7 @@
     "@rollup/plugin-image": "latest",
     "@rollup/plugin-json": "latest",
     "@rollup/plugin-node-resolve": "latest",
-    "@rollup/plugin-typescript": "latest",
+    "@rollup/plugin-typescript": "11.1.6",
     "@types/glob": "^8.1.0",
     "babel": "^6.23.0",
     "chalk": "^4.1.2",
