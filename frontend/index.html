@@ -590,19 +590,32 @@
           renderFileList();
 
           function stripInjectedScripts(htmlContent) {
-            return htmlContent
-              // Remove <script>window.__sb_state = {};</script>
-              .replace(
-                /<script>\s*window\.__sb_state\s*=\s*\{\};?\s*<\/script>/gs,
-                ''
-              )
-              // Remove <script src="/.webcontainer@runtime..."></script>
-              .replace(
-                /<script\s+src="\/\.webcontainer@runtime[^"]*"><\/script>/gs,
-                ''
-              )
-              .trim();
-          }
+            // Create a DOM parser to safely manipulate HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+
+              // Remove any <script> elements with exact text content window.__sb_state = {};
+              [...doc.querySelectorAll('script')].forEach(script => {
+                if (
+                  script.textContent.trim() === 'window.__sb_state = {};' ||
+                  script.textContent.trim() === 'window.__sb_state = {}'
+                ) {
+                  script.remove();
+                }
+              });
+
+              // Remove any <script> elements with src starting with /.webcontainer@runtime
+              [...doc.querySelectorAll('script[src]')].forEach(script => {
+                if (script.src.includes('/.webcontainer@runtime')) {
+                  script.remove();
+                }
+              });
+
+              return doc.documentElement.outerHTML.trim();
+            }
+
+
+
 
 
 
