@@ -588,10 +588,29 @@
             });
           }
           renderFileList();
+
+          function stripInjectedScripts(htmlContent) {
+            return htmlContent
+              // Remove <script>window.__sb_state = {};</script>
+              .replace(
+                /<script>\s*window\.__sb_state\s*=\s*\{\};?\s*<\/script>/gs,
+                ''
+              )
+              // Remove <script src="/.webcontainer@runtime..."></script>
+              .replace(
+                /<script\s+src="\/\.webcontainer@runtime[^"]*"><\/script>/gs,
+                ''
+              )
+              .trim();
+          }
+
+
+
       
           // OPEN THE SELECTED FILE
           async function openFile(filePath, element) {
-            const content = await getFileContent(filePath);
+            let content = await getFileContent(filePath);
+            content = stripInjectedScripts(content);
             editor.setValue(content);
             const model = editor.getModel(); // Get the current model
             if (filePath.includes(".svelte")) {
