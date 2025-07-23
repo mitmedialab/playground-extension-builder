@@ -626,7 +626,7 @@
           // OPEN THE SELECTED FILE
           async function openFile(filePath, element) {
             let content = await getFileContent(filePath);
-            content = stripInjectedScripts(content);
+            //content = stripInjectedScripts(content);
             editor.setValue(content);
             const model = editor.getModel(); // Get the current model
             if (filePath.includes(".svelte")) {
