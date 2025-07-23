@@ -590,24 +590,21 @@
           renderFileList();
 
           function stripInjectedScripts(content) {
-          // Remove <script>window.__sb_state = {};</script>
-          const stateScript = '<script>window.__sb_state = {};</script>';
+          const stateScript = `<script>window.__sb_state = {};</script>`;
           while (content.includes(stateScript)) {
             content = content.replace(stateScript, '');
           }
 
-          // Remove script tags with src starting with "/.webcontainer@runtime"
-          let startIndex = content.indexOf('<script src="/.webcontainer@runtime');
+          let startIndex = content.indexOf(`<script src="/.webcontainer@runtime`);
           while (startIndex !== -1) {
-            const endIndex = content.indexOf('</script>', startIndex);
+            const endIndex = content.indexOf(`</script>`, startIndex);
             if (endIndex !== -1) {
               const fullTag = content.substring(startIndex, endIndex + 9); 
               content = content.replace(fullTag, '');
             } else {
-              // If closing tag not found, break to avoid infinite loop
               break;
             }
-            startIndex = content.indexOf('<script src="/.webcontainer@runtime');
+            startIndex = content.indexOf(`<script src="/.webcontainer@runtime`);
           }
 
           return content;
