@@ -197,6 +197,7 @@ app.post('/open-file', (req, res) => {
       res.status(500).send(err.message);
       return;
     }
+    res.type("text");
     res.send(data);
   });
 });
