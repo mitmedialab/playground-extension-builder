@@ -11,6 +11,8 @@
     "ignoreDeprecations": "5.0",
     "noErrorTruncation": true,
     "strictPropertyInitialization": false,
+    "verbatimModuleSyntax": false,
+     "importsNotUsedAsValues": "remove",
     "lib": [
       "dom",
       "es6",
