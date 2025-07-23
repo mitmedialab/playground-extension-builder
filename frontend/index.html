@@ -517,7 +517,6 @@
             modal.style.display = "flex";
 
             try {
-              reloadScripts();
               const response = await fetch('/run-command', {
                 method: 'POST',
                 headers: {
