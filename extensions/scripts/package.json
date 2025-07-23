@@ -29,8 +29,8 @@
     "rollup-plugin-svg": "latest",
     "rollup-plugin-terser": "latest",
     "sanitize-filename": "^1.6.3",
-    "svelte-preprocess": "^5.0.0",
-    "tslib": "^2.5.0",
+    "svelte-preprocess": "5.0.0",
+    "tslib": "2.5.0",
     "typescript": "5.4.5"
   },
   "overrides": {
