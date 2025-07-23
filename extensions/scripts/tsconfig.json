@@ -9,6 +9,8 @@
     "moduleResolution": "Node",
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0",
+    "verbatimModuleSyntax": false,
+    "importsNotUsedAsValues": "remove"
   },
   "include": ["**/*.ts", "../../scripts/**/*.ts"],
   "ignoreDeprecations": "5.0"
