@@ -22,7 +22,7 @@ hackToFilterOutUnhelpfulRollupLogs();
 
 (async () => {
   // Only do the full build if it's the first time
-  if (fullRun || true) {
+  if (fullRun) {
     await bundleFramework(watch);
   }
 
