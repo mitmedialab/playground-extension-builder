@@ -293,8 +293,6 @@
         </div>
       </div>
     </div>
-    <script src="helper.js"></script>
-    <script src="svelte-monarch.js"></script>
     <script>
       window.addEventListener('message', async (event) => {
         console.log("RECEIVED MESSAGE", event);
@@ -342,319 +340,319 @@
           event.source.postMessage({ type: 'list_directory_result', payload: files }, event.origin);
         }
       });
-      // START UP THE EDITOR
-      let editor;
-      const monacoLoader = document.createElement('script');
-      const container = document.createElement('div');
-      container.setAttribute("class", "scriptRemove");
-      monacoLoader.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs/loader.js';
-      monacoLoader.setAttribute("defer", "");
-      monacoLoader.onload = () => {
-          require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs' } });
-          require(['vs/editor/editor.main'], function () {
-              editor = monaco.editor.create(document.getElementById('fileContent'), {
-                value: `// Select a file to edit`,
-                language: 'typescript',
-                theme: 'vs-dark',
-                padding: {
-                    top: 10,
-                    bottom: 10
-                }
-            });
+      // // START UP THE EDITOR
+      // let editor;
+      // const monacoLoader = document.createElement('script');
+      // const container = document.createElement('div');
+      // container.setAttribute("class", "scriptRemove");
+      // monacoLoader.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs/loader.js';
+      // monacoLoader.setAttribute("defer", "");
+      // monacoLoader.onload = () => {
+      //     require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs' } });
+      //     require(['vs/editor/editor.main'], function () {
+      //         editor = monaco.editor.create(document.getElementById('fileContent'), {
+      //           value: `// Select a file to edit`,
+      //           language: 'typescript',
+      //           theme: 'vs-dark',
+      //           padding: {
+      //               top: 10,
+      //               bottom: 10
+      //           }
+      //       });
             
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-                module: monaco.languages.typescript.ModuleKind.ESNext,
-                target: monaco.languages.typescript.ScriptTarget.ESNext,
-                allowNonTsExtensions: true,
-                allowSyntheticDefaultImports: true,
-            });
+      //       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      //           module: monaco.languages.typescript.ModuleKind.ESNext,
+      //           target: monaco.languages.typescript.ScriptTarget.ESNext,
+      //           allowNonTsExtensions: true,
+      //           allowSyntheticDefaultImports: true,
+      //       });
 
-            monaco.languages.register({ id: 'svelte' });
-            monaco.languages.setMonarchTokensProvider('svelte', {
-              tokenizer: svelteLanguage.tokenizer
-            });
+      //       monaco.languages.register({ id: 'svelte' });
+      //       monaco.languages.setMonarchTokensProvider('svelte', {
+      //         tokenizer: svelteLanguage.tokenizer
+      //       });
             
-            monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-                noSemanticValidation: true,
-                noSyntaxValidation: false,
-            });
+      //       monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      //           noSemanticValidation: true,
+      //           noSyntaxValidation: false,
+      //       });
             
-            monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
-            editor.onDidChangeModelContent(() => {
-              // Clear any existing save timeout
-              clearTimeout(saveTimeout);
+      //       monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+      //       editor.onDidChangeModelContent(() => {
+      //         // Clear any existing save timeout
+      //         clearTimeout(saveTimeout);
 
-              // Debounce save by 500ms to avoid spamming the server on every keystroke
-              saveTimeout = setTimeout(autoSaveFile, 500);
+      //         // Debounce save by 500ms to avoid spamming the server on every keystroke
+      //         saveTimeout = setTimeout(autoSaveFile, 500);
 
-              // Show "Saving..." while typing
-              saveButton.innerText = 'Saving...';
-            });
-          });
-      };
+      //         // Show "Saving..." while typing
+      //         saveButton.innerText = 'Saving...';
+      //       });
+      //     });
+      // };
 
-      container.appendChild(monacoLoader);
+      // container.appendChild(monacoLoader);
 
-      // BUILD THE FULL COMMAND AT START
-      fetch('/run-command', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_run: true // or false, depending on your logic
-        })
-      });
+      // // BUILD THE FULL COMMAND AT START
+      // fetch('/run-command', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     first_run: true // or false, depending on your logic
+      //   })
+      // });
 
-      // ONLY ADD THE PLAYGROUND AFTER THE SCRIPTS LOAD
-      // Observe changes to the DOM
-      const observer = new MutationObserver((mutationsList) => {
-          for (const mutation of mutationsList) {
-              if (mutation.type === 'childList') {
-                  const addedNodes = Array.from(mutation.addedNodes);
-                  for (const node of addedNodes) {
-                      if (node instanceof HTMLElement && Array.from(node.classList).some(className => className.includes("index_app"))) {
-                        document.body.appendChild(container);
-                          observer.disconnect(); // Stop observing once the div is found
-                          break;
-                      }
-                  }
-              }
-          }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
+      // // ONLY ADD THE PLAYGROUND AFTER THE SCRIPTS LOAD
+      // // Observe changes to the DOM
+      // const observer = new MutationObserver((mutationsList) => {
+      //     for (const mutation of mutationsList) {
+      //         if (mutation.type === 'childList') {
+      //             const addedNodes = Array.from(mutation.addedNodes);
+      //             for (const node of addedNodes) {
+      //                 if (node instanceof HTMLElement && Array.from(node.classList).some(className => className.includes("index_app"))) {
+      //                   document.body.appendChild(container);
+      //                     observer.disconnect(); // Stop observing once the div is found
+      //                     break;
+      //                 }
+      //             }
+      //         }
+      //     }
+      // });
+      // observer.observe(document.body, { childList: true, subtree: true });
 
-      // AUTOMATICALY SAVE THE FILE
-      let saveTimeout;
-      let isSaving = false;
+      // // AUTOMATICALY SAVE THE FILE
+      // let saveTimeout;
+      // let isSaving = false;
 
-      async function autoSaveFile() {
-        if (!currentFilePath || isSaving) return;
+      // async function autoSaveFile() {
+      //   if (!currentFilePath || isSaving) return;
 
-        isSaving = true;
+      //   isSaving = true;
 
-        const content = editor.getValue();
+      //   const content = editor.getValue();
 
-        try {
-          const response = await fetch('/save-file', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ path: currentFilePath, content }),
-          });
+      //   try {
+      //     const response = await fetch('/save-file', {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //       body: JSON.stringify({ path: currentFilePath, content }),
+      //     });
 
-          if (response.ok) {
-            saveButton.innerText = 'Saved';
-            // const response = fetch('/run-command', {
-            //     method: 'POST',
-            //     headers: {
-            //       'Content-Type': 'application/json',
-            //     }
-            //   });
-          } else {
-            saveButton.innerText = 'Failed to save';
-          }
-        } catch (err) {
-          console.error('Save error:', err);
-          saveButton.innerText = 'Error saving';
-        }
+      //     if (response.ok) {
+      //       saveButton.innerText = 'Saved';
+      //       // const response = fetch('/run-command', {
+      //       //     method: 'POST',
+      //       //     headers: {
+      //       //       'Content-Type': 'application/json',
+      //       //     }
+      //       //   });
+      //     } else {
+      //       saveButton.innerText = 'Failed to save';
+      //     }
+      //   } catch (err) {
+      //     console.error('Save error:', err);
+      //     saveButton.innerText = 'Error saving';
+      //   }
 
-        isSaving = false;
-      }
+      //   isSaving = false;
+      // }
       
 
-      // Remove the previous version of the Playground
-      function removeBodyChildrenExcept() {
-        const body = document.body;
-        const children = Array.from(body.children); // Get all children of the body
+      // // Remove the previous version of the Playground
+      // function removeBodyChildrenExcept() {
+      //   const body = document.body;
+      //   const children = Array.from(body.children); // Get all children of the body
 
-        children.forEach(child => {
-            // Remove the child if it doesn't have class "top-panel" or "container"
-            if (!child.classList.contains("monaco") && !child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('editor-panel') && !child.classList.contains('modal')) {
-              body.removeChild(child);
-            }
-          });
-          const head = document.head;
-          const childrenHead = Array.from(head.children); // Get all children of the body
+      //   children.forEach(child => {
+      //       // Remove the child if it doesn't have class "top-panel" or "container"
+      //       if (!child.classList.contains("monaco") && !child.classList.contains('top-panel') && !child.classList.contains('container_class') && !child.classList.contains('editor-panel') && !child.classList.contains('modal')) {
+      //         body.removeChild(child);
+      //       }
+      //     });
+      //     const head = document.head;
+      //     const childrenHead = Array.from(head.children); // Get all children of the body
 
-          childrenHead.forEach(child => {
-            // Remove the child if it doesn't have class "top-panel" or "container"
-            if (child.classList && child.classList.contains("scriptRemove")) {
-              head.removeChild(child);
-            }
-          });
-        }
+      //     childrenHead.forEach(child => {
+      //       // Remove the child if it doesn't have class "top-panel" or "container"
+      //       if (child.classList && child.classList.contains("scriptRemove")) {
+      //         head.removeChild(child);
+      //       }
+      //     });
+      //   }
 
-          // document.getElementById('checkErrorButton').addEventListener('click', async () => {
-          //     const response = await fetch('/check-errors', {
-          //       method: 'POST',
-          //       headers: {
-          //         'Content-Type': 'application/json',
-          //       },
-          //       body: JSON.stringify({ path1: currentFilePath, content: editor.getValue() }),
-          //       // body: JSON.stringify({ path1: currentFilePath, content: "" }),
-          //     });
-          //     const text = await response.text()
-          // });
+      //     // document.getElementById('checkErrorButton').addEventListener('click', async () => {
+      //     //     const response = await fetch('/check-errors', {
+      //     //       method: 'POST',
+      //     //       headers: {
+      //     //         'Content-Type': 'application/json',
+      //     //       },
+      //     //       body: JSON.stringify({ path1: currentFilePath, content: editor.getValue() }),
+      //     //       // body: JSON.stringify({ path1: currentFilePath, content: "" }),
+      //     //     });
+      //     //     const text = await response.text()
+      //     // });
 
-          // Reload the scripts
-          function reloadScripts() {
-            const scripts = document.body.querySelectorAll('script');
-            removeBodyChildrenExcept();
-            scripts.forEach((script) => {
-              if (!script.src.includes("monaco")) {
-                const src = script.src;
-                if (src) {
-                  const newScript = document.createElement('script');
-                  newScript.src = `${src.split('?')[0]}?v=${Date.now()}`; // Add a timestamp to prevent caching
-                  newScript.defer = true;
-                  document.body.appendChild(newScript);
-                }
-              }
-            });
+      //     // Reload the scripts
+      //     function reloadScripts() {
+      //       const scripts = document.body.querySelectorAll('script');
+      //       removeBodyChildrenExcept();
+      //       scripts.forEach((script) => {
+      //         if (!script.src.includes("monaco")) {
+      //           const src = script.src;
+      //           if (src) {
+      //             const newScript = document.createElement('script');
+      //             newScript.src = `${src.split('?')[0]}?v=${Date.now()}`; // Add a timestamp to prevent caching
+      //             newScript.defer = true;
+      //             document.body.appendChild(newScript);
+      //           }
+      //         }
+      //       });
             
-          }
+      //     }
 
 
 
-          // CODE TO HANDLE PLAYGROUND TAB
-          const toggleContainerButton = document.getElementById('toggleContainerButton');
-          const mainContainer = document.getElementById('mainContainer');
+      //     // CODE TO HANDLE PLAYGROUND TAB
+      //     const toggleContainerButton = document.getElementById('toggleContainerButton');
+      //     const mainContainer = document.getElementById('mainContainer');
 
 
-          toggleContainerButton.addEventListener('click', () => {
-            if (mainContainer.style.display === 'none') {
-              mainContainer.style.display = 'block';
-              toggleContainerButton.textContent = 'Show Playground';
-            } else {
-              mainContainer.style.display = 'none';
-              toggleContainerButton.textContent = 'Hide Playground';
-            }
-          });
+      //     toggleContainerButton.addEventListener('click', () => {
+      //       if (mainContainer.style.display === 'none') {
+      //         mainContainer.style.display = 'block';
+      //         toggleContainerButton.textContent = 'Show Playground';
+      //       } else {
+      //         mainContainer.style.display = 'none';
+      //         toggleContainerButton.textContent = 'Hide Playground';
+      //       }
+      //     });
 
-          // const socket = new WebSocket('ws://localhost:8081');
-          // socket.addEventListener('message', (event) => {
-          //   if (event.data === 'reload') {
-          //     console.log("RELOAD DATA");
-          //     reloadScripts();
-          //   }
-          // });
+      //     // const socket = new WebSocket('ws://localhost:8081');
+      //     // socket.addEventListener('message', (event) => {
+      //     //   if (event.data === 'reload') {
+      //     //     console.log("RELOAD DATA");
+      //     //     reloadScripts();
+      //     //   }
+      //     // });
 
 
-          // BUTTON HANDLERS
-          const buildButton = document.getElementById('buildButton');
-          const statusElement = document.getElementById('status');
-          const outputElement = document.getElementById('output');
-          const codeEditor = document.getElementById('codeEditor');
-          const fileList = document.getElementById('fileList');
-          const fileContent = document.getElementById('fileContent');
-          const saveButton = document.getElementById('saveButton');
+      //     // BUTTON HANDLERS
+      //     const buildButton = document.getElementById('buildButton');
+      //     const statusElement = document.getElementById('status');
+      //     const outputElement = document.getElementById('output');
+      //     const codeEditor = document.getElementById('codeEditor');
+      //     const fileList = document.getElementById('fileList');
+      //     const fileContent = document.getElementById('fileContent');
+      //     const saveButton = document.getElementById('saveButton');
 
-          let currentFilePath = null;
+      //     let currentFilePath = null;
 
-          // BUILD THE PLAYGROUND
-          buildButton.addEventListener('click', async () => {
-            //const code = codeEditor.value; // Get the code from the editor
+      //     // BUILD THE PLAYGROUND
+      //     buildButton.addEventListener('click', async () => {
+      //       //const code = codeEditor.value; // Get the code from the editor
             
-            statusElement.textContent = 'Generating preview...';
-            outputElement.textContent = ''; // Clear previous output
-            const modal = document.getElementById("modal");
-            modal.style.display = "flex";
+      //       statusElement.textContent = 'Generating preview...';
+      //       outputElement.textContent = ''; // Clear previous output
+      //       const modal = document.getElementById("modal");
+      //       modal.style.display = "flex";
 
-            try {
-              const response = await fetch('/run-command', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  first_run: false 
-                })
-              });
+      //       try {
+      //         const response = await fetch('/run-command', {
+      //           method: 'POST',
+      //           headers: {
+      //             'Content-Type': 'application/json',
+      //           },
+      //           body: JSON.stringify({
+      //             first_run: false 
+      //           })
+      //         });
               
-              if (response.ok) {
-                const message = await response.text(); // Retrieve the response text
-                console.log('Success:', message);
-                outputElement.textContent = `Success: ${message}`;
-                modal.style.display = "none";
-                reloadScripts();
-                mainContainer.style.display = 'none';
-                toggleContainerButton.textContent = 'Hide Playground';
+      //         if (response.ok) {
+      //           const message = await response.text(); // Retrieve the response text
+      //           console.log('Success:', message);
+      //           outputElement.textContent = `Success: ${message}`;
+      //           modal.style.display = "none";
+      //           reloadScripts();
+      //           mainContainer.style.display = 'none';
+      //           toggleContainerButton.textContent = 'Hide Playground';
 
-              } else {
-                const errorMessage = await response.text();
-                console.error('Error:', errorMessage);
-                outputElement.textContent = `Error: ${errorMessage}`;
+      //         } else {
+      //           const errorMessage = await response.text();
+      //           console.error('Error:', errorMessage);
+      //           outputElement.textContent = `Error: ${errorMessage}`;
 
-              }
-            } catch (error) {
-              console.error('Fetch error:', error);
-              outputElement.textContent = `Fetch error: ${error.message}`;
-            }
-          });
+      //         }
+      //       } catch (error) {
+      //         console.error('Fetch error:', error);
+      //         outputElement.textContent = `Fetch error: ${error.message}`;
+      //       }
+      //     });
 
 
-          // SAVE THE FILE
-          saveButton.addEventListener('click', async () => {
-            if (!currentFilePath) {
-              alert('No file selected!');
-              return;
-            }
+      //     // SAVE THE FILE
+      //     saveButton.addEventListener('click', async () => {
+      //       if (!currentFilePath) {
+      //         alert('No file selected!');
+      //         return;
+      //       }
       
-            const content = editor.getValue();
-            // const content = "";
-            const response = await fetch('/save-file', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ path: currentFilePath, content }),
-            });
+      //       const content = editor.getValue();
+      //       // const content = "";
+      //       const response = await fetch('/save-file', {
+      //         method: 'POST',
+      //         headers: {
+      //           'Content-Type': 'application/json',
+      //         },
+      //         body: JSON.stringify({ path: currentFilePath, content }),
+      //       });
       
-            if (response.ok) {
-              alert('File saved successfully!');
-            } else {
-              alert('Failed to save file.');
-            }
-          });
+      //       if (response.ok) {
+      //         alert('File saved successfully!');
+      //       } else {
+      //         alert('Failed to save file.');
+      //       }
+      //     });
       
-          // POPULATE THE FILE LIST
-          async function renderFileList() {
-            const files = await fetchFileList();
-            fileList.innerHTML = '';
-            files.forEach(file => {
-              const li = document.createElement('li');
-              li.textContent = file.name;
-              console.log(file.name);
+      //     // POPULATE THE FILE LIST
+      //     async function renderFileList() {
+      //       const files = await fetchFileList();
+      //       fileList.innerHTML = '';
+      //       files.forEach(file => {
+      //         const li = document.createElement('li');
+      //         li.textContent = file.name;
+      //         console.log(file.name);
               
-              li.className = 'file-item';
-              li.onclick = () => openFile(file.path, li);
-              fileList.appendChild(li);
-            });
-          }
-          renderFileList();
+      //         li.className = 'file-item';
+      //         li.onclick = () => openFile(file.path, li);
+      //         fileList.appendChild(li);
+      //       });
+      //     }
+      //     renderFileList();
 
-          function stripInjectedScripts(content) {
-            const scriptStart = '<script>';
-            const scriptEnd = '</' + 'script>';
-            const stateScript = scriptStart + 'window.__sb_state = {};' + scriptEnd;
+      //     function stripInjectedScripts(content) {
+      //       const scriptStart = '<script>';
+      //       const scriptEnd = '</' + 'script>';
+      //       const stateScript = scriptStart + 'window.__sb_state = {};' + scriptEnd;
 
-            while (content.includes(stateScript)) {
-              content = content.replace(stateScript, '');
-            }
+      //       while (content.includes(stateScript)) {
+      //         content = content.replace(stateScript, '');
+      //       }
 
-            const runtimeStart = '<script src="/.webcontainer@runtime';
-            while (content.includes(runtimeStart)) {
-              const start = content.indexOf(runtimeStart);
-              const end = content.indexOf(scriptEnd, start);
-              if (end === -1) break;
-              const fullScript = content.slice(start, end + scriptEnd.length);
-              content = content.replace(fullScript, '');
-            }
+      //       const runtimeStart = '<script src="/.webcontainer@runtime';
+      //       while (content.includes(runtimeStart)) {
+      //         const start = content.indexOf(runtimeStart);
+      //         const end = content.indexOf(scriptEnd, start);
+      //         if (end === -1) break;
+      //         const fullScript = content.slice(start, end + scriptEnd.length);
+      //         content = content.replace(fullScript, '');
+      //       }
 
-            return content;
-          }
+      //       return content;
+      //     }
 
 
 
@@ -669,22 +667,22 @@
 
 
       
-          // OPEN THE SELECTED FILE
-          async function openFile(filePath, element) {
-            let content = await getFileContent(filePath);
-            //content = stripInjectedScripts(content);
-            editor.setValue(content);
-            const model = editor.getModel(); // Get the current model
-            if (filePath.includes(".svelte")) {
-              console.log("setting language");
-              monaco.editor.setModelLanguage(model, "svelte"); // Set the new language
-            } else {
-              monaco.editor.setModelLanguage(model, "typescript"); // Set the new language
-            }
-            currentFilePath = filePath;
-            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-          }
+      //     // OPEN THE SELECTED FILE
+      //     async function openFile(filePath, element) {
+      //       let content = await getFileContent(filePath);
+      //       //content = stripInjectedScripts(content);
+      //       editor.setValue(content);
+      //       const model = editor.getModel(); // Get the current model
+      //       if (filePath.includes(".svelte")) {
+      //         console.log("setting language");
+      //         monaco.editor.setModelLanguage(model, "svelte"); // Set the new language
+      //       } else {
+      //         monaco.editor.setModelLanguage(model, "typescript"); // Set the new language
+      //       }
+      //       currentFilePath = filePath;
+      //       document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+      //       element.classList.add('active');
+      //     }
       
           
     </script>
