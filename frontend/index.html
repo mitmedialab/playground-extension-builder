@@ -298,16 +298,16 @@
     <script>
       window.addEventListener('message', (event) => {
         console.log("RECEIVED MESSAGE", event);
-  if (event.origin !== 'http://localhost:5173') return; // security check
+        if (event.origin !== 'http://localhost:5173') return; // security check
 
-  const { type, payload } = event.data;
+        const { type, payload } = event.data;
 
-  if (type === 'RUN_COMMAND') {
-    console.log('Received command:', payload);
-    // process the payload, run command, send result back
-    event.source.postMessage({ type: 'RESULT', payload: 'Command output here' }, event.origin);
-  }
-});
+        if (type === 'RUN_COMMAND') {
+          console.log('Received command:', payload);
+          // process the payload, run command, send result back
+          event.source.postMessage({ type: 'RESULT', payload: 'Command output here' }, event.origin);
+        }
+      });
       // START UP THE EDITOR
       let editor;
       const monacoLoader = document.createElement('script');
