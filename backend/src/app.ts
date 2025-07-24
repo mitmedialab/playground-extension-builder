@@ -13,32 +13,36 @@ const frontendPath = path.resolve(__dirname, '../../frontend/');
 // Serve static files from the frontend directory
 app.use('/', express.static(frontendPath));
 app.use(express.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['X-Requested-With', 'Content-Type'],
-  credentials: true,
-}));
-
-app.options('*', cors());
 
 const rootDir = path.resolve(__dirname, '../../');
 
 const PORT = 8081;
 const wss = new WebSocketServer({ port: PORT });
 
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:5173', // Only allow your frontend
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['X-Requested-With', 'Content-Type'],
+  credentials: true,
+};
 
+// Use CORS
+app.use(cors(corsOptions));
+
+// Manually set additional headers for edge cases
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
   res.header('Access-Control-Allow-Private-Network', 'true');
   res.header('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(204); // No content
+    return res.sendStatus(204); // Preflight success
   }
   next();
 });
+
 
 
 // Serve the main HTML file for all routes
