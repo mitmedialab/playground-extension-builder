@@ -3,6 +3,7 @@ import { exec, spawn, fork, type ChildProcess } from 'child_process';
 import WebSocket, { WebSocketServer } from 'ws';
 import path from 'path';
 import fs from 'fs';
+import cors from 'cors';
 
 const app = express();
 
@@ -12,6 +13,7 @@ const frontendPath = path.resolve(__dirname, '../../frontend/');
 // Serve static files from the frontend directory
 app.use('/', express.static(frontendPath));
 app.use(express.json());
+app.use(cors()); // allow all origins (or configure more strictly if needed)
 
 const rootDir = path.resolve(__dirname, '../../');
 
