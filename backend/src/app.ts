@@ -13,7 +13,12 @@ const frontendPath = path.resolve(__dirname, '../../frontend/');
 // Serve static files from the frontend directory
 app.use('/', express.static(frontendPath));
 app.use(express.json());
-app.use(cors()); // allow all origins (or configure more strictly if needed)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['X-Requested-With', 'Content-Type'],
+  credentials: true,
+}));
 
 const rootDir = path.resolve(__dirname, '../../');
 
