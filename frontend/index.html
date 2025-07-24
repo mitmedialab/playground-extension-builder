@@ -296,16 +296,50 @@
     <script src="helper.js"></script>
     <script src="svelte-monarch.js"></script>
     <script>
-      window.addEventListener('message', (event) => {
+      window.addEventListener('message', async (event) => {
         console.log("RECEIVED MESSAGE", event);
         if (event.origin !== 'http://localhost:5173') return; // security check
 
         const { type, payload } = event.data;
 
-        if (type === 'RUN_COMMAND') {
+        if (type === 'run_command') {
           console.log('Received command:', payload);
           // process the payload, run command, send result back
-          event.source.postMessage({ type: 'RESULT', payload: 'Command output here' }, event.origin);
+          const response = await fetch('/run-command', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              first_run: payload.first_run 
+            })
+          });
+          event.source.postMessage({ type: 'run_command_result', payload: response.ok }, event.origin);
+        } else if (type == 'open_file') {
+          console.log("PAYLOAD", payload);
+          const response = await fetch(`/open-file`, { method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ content: payload.file_path })});
+          const content = await response.text();
+          event.source.postMessage({ type: 'open_file_result', payload: content }, event.origin);
+        } else if (type == 'save_file') {
+          const response = await fetch('/save-file', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ path: payload.file_path, content: payload.content }),
+          });
+          event.source.postMessage({ type: 'save_file_result', payload: response.ok }, event.origin);
+        } else if (type == 'list_directory') {
+          const response = await fetch('/list-directory', { method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }});
+          const files = await response.json();
+          event.source.postMessage({ type: 'list_directory_result', payload: files }, event.origin);
         }
       });
       // START UP THE EDITOR
