@@ -20,6 +20,8 @@ app.use(cors({
   credentials: true,
 }));
 
+app.options('*', cors());
+
 const rootDir = path.resolve(__dirname, '../../');
 
 const PORT = 8081;
