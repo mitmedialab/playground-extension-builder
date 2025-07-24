@@ -21,6 +21,19 @@ const PORT = 8081;
 const wss = new WebSocketServer({ port: PORT });
 
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
+  res.header('Access-Control-Allow-Private-Network', 'true');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204); // No content
+  }
+  next();
+});
+
+
 // Serve the main HTML file for all routes
 app.get('/', (req, res) => {
   const filePath = path.join(frontendPath, 'index.html');
