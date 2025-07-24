@@ -297,6 +297,7 @@
     <script src="svelte-monarch.js"></script>
     <script>
       window.addEventListener('message', (event) => {
+        console.log("RECEIVED MESSAGE", event);
   if (event.origin !== 'http://localhost:5173') return; // security check
 
   const { type, payload } = event.data;
