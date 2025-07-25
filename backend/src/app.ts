@@ -151,16 +151,6 @@ app.post('/run-command', (req: Request, res: Response) => {
       const auxiliaryPathFull = path.join(rootDir, 'frontend/static/extension-bundles/AuxiliaryExtensionInfo.js');
       const auxiliaryPathExtension = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/AuxiliaryExtensionInfo.js');
 
-
-      fs.readFile(filePath, 'utf-8', (err, data) => {
-        if (err) {
-          res.status(500).send(err.message);
-          return;
-        }
-        res.type("text");
-        res.send(data);
-      });
-
       let files;
         files = {
           "AuxiliaryExtensionInfo.js": auxiliaryPathExtension,
