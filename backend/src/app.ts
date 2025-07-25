@@ -151,30 +151,64 @@ app.post('/run-command', (req: Request, res: Response) => {
       const auxiliaryPathFull = path.join(rootDir, 'frontend/static/extension-bundles/AuxiliaryExtensionInfo.js');
       const auxiliaryPathExtension = path.join(rootDir, 'scratch-packages/scratch-gui/static/extension-bundles/AuxiliaryExtensionInfo.js');
 
-      // Copy both files
-      copyFile(sourcePath, destinationPath, (err1: Error) => {
-        if (err1) {
-            res.status(500).send('Error copying the first file');
-            return;
+
+      fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) {
+          res.status(500).send(err.message);
+          return;
         }
-        copyFile(sourcePath1, destinationPath1, (err2: Error) => {
-            if (err2) {
-                res.status(500).send('Error copying the second file');
-            } else {
-                readAuxiliaryExtensionInfo(auxiliaryPathFull).then((fullJSON) => {
-                  readAuxiliaryExtensionInfo(auxiliaryPathExtension).then((extensionJSON) => {
-                    const name = Object.keys(extensionJSON)[0];
-                    fullJSON[name] = extensionJSON[name];
-                    const content = `var AuxiliaryExtensionInfo = ${JSON.stringify(fullJSON)};`;
-                    fs.writeFile(auxiliaryPathFull, content, () => {
-                      res.status(200).send('Build completed successfully and files moved');
-                    });
-                    
-                  });
-                })
-            }
-        });
+        res.type("text");
+        res.send(data);
       });
+
+      let files;
+        files = {
+          "AuxiliaryExtensionInfo.js": auxiliaryPathExtension,
+          "simpleprg95grpexample.js": sourcePath,
+          "simpleprg95grpexample.js.map": sourcePath1
+        }
+
+      const jsonDictionary = {};
+
+    Promise.all(
+      Object.entries(files).map(([key, filePath]) =>
+        fs.promises.readFile(filePath, 'utf-8')
+          .then(data => {
+            jsonDictionary[key] = data;
+          })
+      )
+    )
+      .then(() => {
+        res.json(jsonDictionary);
+      })
+      .catch(err => {
+        res.status(500).send(err.message);
+      });
+
+      // Copy both files
+      // copyFile(sourcePath, destinationPath, (err1: Error) => {
+      //   if (err1) {
+      //       res.status(500).send('Error copying the first file');
+      //       return;
+      //   }
+      //   copyFile(sourcePath1, destinationPath1, (err2: Error) => {
+      //       if (err2) {
+      //           res.status(500).send('Error copying the second file');
+      //       } else {
+      //           readAuxiliaryExtensionInfo(auxiliaryPathFull).then((fullJSON) => {
+      //             readAuxiliaryExtensionInfo(auxiliaryPathExtension).then((extensionJSON) => {
+      //               const name = Object.keys(extensionJSON)[0];
+      //               fullJSON[name] = extensionJSON[name];
+      //               const content = `var AuxiliaryExtensionInfo = ${JSON.stringify(fullJSON)};`;
+      //               fs.writeFile(auxiliaryPathFull, content, () => {
+      //                 res.status(200).send('Build completed successfully and files moved');
+      //               });
+                    
+      //             });
+      //           })
+      //       }
+      //   });
+      // });
     }
   });
 });
