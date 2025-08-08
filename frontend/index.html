@@ -293,7 +293,7 @@
               first_run: payload.first_run 
             })
           });
-          event.source.postMessage({ type: 'run_command_result', payload: response.ok }, event.origin);
+          event.source.postMessage({ type: 'run_command_result', payload: await response.json() }, event.origin);
         } else if (type == 'open_file') {
           console.log("PAYLOAD", payload);
           const response = await fetch(`/open-file`, { method: 'POST',
