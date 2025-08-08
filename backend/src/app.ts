@@ -158,7 +158,7 @@ app.post('/run-command', (req: Request, res: Response) => {
           "simpleprg95grpexample.js.map": sourcePath1
         }
 
-      const jsonDictionary = {};
+        const jsonDictionary: Record<string, string> = {};
 
     Promise.all(
       Object.entries(files).map(([key, filePath]) =>
