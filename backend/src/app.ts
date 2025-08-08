@@ -169,6 +169,7 @@ app.post('/run-command', (req: Request, res: Response) => {
       )
     )
       .then(() => {
+        console.log("JSON DICTIONARY", jsonDictionary);
         res.json(jsonDictionary);
       })
       .catch(err => {
